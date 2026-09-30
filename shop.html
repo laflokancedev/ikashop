@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IkaShop — Steering Wheels</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="brand">
+      <span class="brand-name">IkaShop</span>
+    </a>
+    <nav class="header-nav">
+      <a href="/">Home</a>
+      <a href="/shop" class="active">Shop</a>
+      <a href="/track">Track Order</a>
+      <button class="cart-btn" onclick="toggleCart()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+        <span class="cart-badge" id="cartBadge">0</span>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<section class="hero" id="heroSection">
+  <h1>Steering Wheels</h1>
+  <p>Premium carbon & Alcantara steering wheels for Mercedes, Audi, Volkswagen & BMW</p>
+</section>
+
+<div class="info-bar">
+  <span>Delivery by email 2–3 weeks · Lieferung per E-Mail 2–3 Wochen</span>
+  <span>Delivery 10 &euro; · Lieferung 10 &euro;</span>
+</div>
+
+<!-- BRAND SELECTION -->
+<section class="brands-section" id="brandsSection">
+  <h2>Choose your brand</h2>
+  <div class="brand-grid" id="brandGrid"></div>
+</section>
+
+<!-- PRODUCTS (hidden by default, shown when a brand is selected) -->
+<section class="products-section" id="productsSection" style="display:none">
+  <div class="section-header">
+    <h2 id="productsTitle">Products</h2>
+    <a href="#" class="back-link" onclick="showBrands(); return false;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      All brands
+    </a>
+  </div>
+  <div class="product-grid" id="productGrid"></div>
+</section>
+
+<!-- PRODUCT DETAIL MODAL -->
+<div class="product-modal-overlay" id="productModal">
+  <div class="product-modal">
+    <div class="product-modal-img">
+      <button class="product-modal-close" onclick="closeProductModal()">&times;</button>
+      <div id="pmBadge"></div>
+      <img id="pmImg" src="" alt="" loading="lazy" decoding="async">
+    </div>
+    <div class="product-modal-body">
+      <div class="pm-brand" id="pmBrand"></div>
+      <div class="pm-name" id="pmName"></div>
+      <div class="pm-subtitle" id="pmSubtitle"></div>
+      <div class="pm-material" id="pmMaterial">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        <span id="pmMaterialText"></span>
+      </div>
+      <div class="pm-price-row">
+        <span class="pm-price" id="pmPrice"></span>
+        <span class="pm-old-price" id="pmOldPrice"></span>
+      </div>
+      <button class="btn-add-cart" id="pmAddCart" onclick="addToCartFromModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+        Add to cart
+      </button>
+      <button class="btn-share-link" id="pmShareBtn" onclick="copyProductLink()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+        <span id="pmShareText">Copy link</span>
+      </button>
+      <div class="pm-shipping">Delivery by email 10 € · 2–3 weeks</div>
+    </div>
+  </div>
+</div>
+
+<!-- CART SIDEBAR -->
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-sidebar-header">
+    <h3>Your cart</h3>
+    <button class="cart-sidebar-close" onclick="toggleCart()">&times;</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-sidebar-footer" id="cartFooter" style="display:none">
+    <div id="cartPricing"></div>
+    <div class="cart-total-row">
+      <span class="cart-total-label">Total</span>
+      <span class="cart-total-value" id="cartTotal">0,00 €</span>
+    </div>
+    <a href="/checkout" class="btn btn-primary" id="checkoutBtn">Checkout</a>
+    <div class="cart-shipping-note" id="cartShippingNote"></div>
+  </div>
+</div>
+
+<section class="purchase-protection">
+  <div class="purchase-protection-inner">
+    <div class="protection-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+      <div>
+        <strong>Purchase Protection</strong>
+        <p>Every order is covered by our buyer protection program</p>
+      </div>
+    </div>
+    <div class="protection-item protection-refund">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      <div>
+        <strong>Refund within 7–15 days</strong>
+        <p>In case of a problem with your package, refund within 7 to 15 business days. In case of user error, only 50% of the initial amount is refunded (taxes & shipping already paid). <a href="/terms" class="terms-link">Terms of use</a></p>
+      </div>
+    </div>
+    <div class="protection-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      <div>
+        <strong>Tracked Delivery by Email</strong>
+        <p>Every order includes a tracking number to follow your delivery by email in real time</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <span class="footer-brand">IKASHOP</span> &copy; 2026 — Prices incl. VAT · <a href="/terms" class="terms-link">Terms of use</a>
+</footer>
+
+<script src="js/products.js"></script>
+<script>
+  const brandGrid = document.getElementById('brandGrid');
+  const brandsSection = document.getElementById('brandsSection');
+  const productsSection = document.getElementById('productsSection');
+  const productGrid = document.getElementById('productGrid');
+  const productsTitle = document.getElementById('productsTitle');
+
+  let cart = [];
+  let currentModalProduct = null;
+
+  // Load cart from server (IP-based)
+  (async function() {
+    try {
+      const res = await fetch('api.php?action=get-cart');
+      const data = await res.json();
+      cart = data.items || [];
+    } catch(e) {
+      cart = JSON.parse(sessionStorage.getItem('zt_cart') || '[]');
+    }
+    updateCartBadge();
+  })();
+
+  async function saveCart() {
+    sessionStorage.setItem('zt_cart', JSON.stringify(cart));
+    try { await fetch('api.php?action=save-cart', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({items:cart}) }); } catch(e){}
+  }
+
+  Object.entries(BRANDS).forEach(([key, b]) => {
+    const count = getProductsByBrand(key).length;
+    const card = document.createElement('div');
+    card.className = 'brand-card';
+    card.onclick = () => showProducts(key);
+    card.innerHTML =
+      '<div class="brand-logo-img"><img src="' + b.logoImg + '" alt="' + b.name + '" loading="lazy" decoding="async"></div>' +
+      '<div class="brand-label">' + b.name + '</div>' +
+      '<div class="brand-count">' + count + ' products</div>';
+    brandGrid.appendChild(card);
+  });
+
+  function showProducts(brand) {
+    const b = BRANDS[brand];
+    const items = getProductsByBrand(brand);
+    productsTitle.textContent = 'Steering Wheels for ' + b.name;
+    productGrid.innerHTML = '';
+    items.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.onclick = () => openProductModal(p);
+      let badgeHtml = '';
+      if (p.badge === 'Sale') badgeHtml = '<div class="product-badge badge-sale">Special Offer</div>';
+      else if (p.badge === 'In Stock') badgeHtml = '<div class="product-badge badge-stock">In Stock</div>';
+      else if (p.badge === 'Premium') badgeHtml = '<div class="product-badge badge-premium">Premium</div>';
+      else if (p.badge === 'Classic') badgeHtml = '<div class="product-badge badge-classic">Classic</div>';
+      let priceHtml = '<span class="product-price">' + p.price.toFixed(2) + ' &euro;</span>';
+      if (p.oldPrice) priceHtml = '<span class="product-price price-sale">' + p.price.toFixed(2) + ' &euro;</span><span class="product-old-price">' + p.oldPrice.toFixed(2) + ' &euro;</span>';
+      card.innerHTML =
+        '<div class="product-img">' +
+          badgeHtml +
+          '<img src="' + p.img + '" alt="' + p.name + '" loading="lazy" decoding="async" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+          '<div class="img-placeholder" style="display:none;position:absolute;inset:0;align-items:center;justify-content:center">' + b.logo + '</div>' +
+        '</div>' +
+        '<div class="product-info">' +
+          '<div class="product-name">' + p.name + '</div>' +
+          '<div class="product-subtitle">' + p.subtitle + '</div>' +
+          '<div class="product-material">' + p.material + '</div>' +
+          '<div class="product-price-row">' + priceHtml + '</div>' +
+        '</div>';
+      productGrid.appendChild(card);
+    });
+    brandsSection.style.display = 'none';
+    productsSection.style.display = '';
+    document.getElementById('heroSection').style.display = 'none';
+    window.scrollTo(0, 0);
+  }
+
+  function showBrands() {
+    brandsSection.style.display = '';
+    productsSection.style.display = 'none';
+    document.getElementById('heroSection').style.display = '';
+    window.scrollTo(0, 0);
+  }
+
+  // ── Product Modal ──
+  function openProductModal(p) {
+    currentModalProduct = p;
+    const b = BRANDS[p.brand];
+    document.getElementById('pmBrand').textContent = b.name;
+    document.getElementById('pmName').textContent = p.name;
+    document.getElementById('pmSubtitle').textContent = p.subtitle;
+    document.getElementById('pmMaterialText').textContent = p.material;
+    document.getElementById('pmImg').src = p.img;
+    document.getElementById('pmImg').alt = p.name;
+
+    let badgeHtml = '';
+    if (p.badge === 'Sale') badgeHtml = '<div class="product-badge badge-sale">Special Offer</div>';
+    else if (p.badge === 'In Stock') badgeHtml = '<div class="product-badge badge-stock">In Stock</div>';
+    else if (p.badge === 'Premium') badgeHtml = '<div class="product-badge badge-premium">Premium</div>';
+    else if (p.badge === 'Classic') badgeHtml = '<div class="product-badge badge-classic">Classic</div>';
+    document.getElementById('pmBadge').innerHTML = badgeHtml;
+
+    const priceEl = document.getElementById('pmPrice');
+    const oldPriceEl = document.getElementById('pmOldPrice');
+    priceEl.textContent = p.price.toFixed(2) + ' €';
+    priceEl.className = 'pm-price' + (p.oldPrice ? ' pm-price-sale' : '');
+    oldPriceEl.textContent = p.oldPrice ? p.oldPrice.toFixed(2) + ' €' : '';
+    oldPriceEl.style.display = p.oldPrice ? '' : 'none';
+
+    const btn = document.getElementById('pmAddCart');
+    const inCart = cart.some(c => c.id === p.id);
+    if (inCart) {
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><polyline points="20 6 9 17 4 12"/></svg> Already in cart';
+      btn.className = 'btn-add-cart added';
+    } else {
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg> Add to cart';
+      btn.className = 'btn-add-cart';
+    }
+
+    document.getElementById('productModal').classList.add('visible');
+    document.body.style.overflow = 'hidden';
+
+    const url = new URL(window.location);
+    url.searchParams.set('product', p.id);
+    history.pushState({ product: p.id }, '', url);
+  }
+
+  function closeProductModal() {
+    document.getElementById('productModal').classList.remove('visible');
+    document.body.style.overflow = '';
+    currentModalProduct = null;
+
+    const url = new URL(window.location);
+    if (url.searchParams.has('product')) {
+      url.searchParams.delete('product');
+      history.pushState({}, '', url);
+    }
+  }
+
+  document.getElementById('productModal').addEventListener('click', function(e) {
+    if (e.target === this) closeProductModal();
+  });
+
+  function copyProductLink() {
+    if (!currentModalProduct) return;
+    const link = window.location.origin + '/shop?product=' + currentModalProduct.id;
+    navigator.clipboard.writeText(link).then(function() {
+      const txt = document.getElementById('pmShareText');
+      txt.textContent = 'Copied!';
+      setTimeout(function() { txt.textContent = 'Copy link'; }, 2000);
+    });
+  }
+
+  function addToCartFromModal() {
+    if (!currentModalProduct) return;
+    const p = currentModalProduct;
+    if (cart.some(c => c.id === p.id)) return;
+    cart.push({ id: p.id, name: p.name, material: p.material, price: p.price, img: p.img, brand: p.brand });
+    saveCart();
+    updateCartBadge();
+
+    const btn = document.getElementById('pmAddCart');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><polyline points="20 6 9 17 4 12"/></svg> Added!';
+    btn.className = 'btn-add-cart added';
+
+    setTimeout(() => {
+      closeProductModal();
+      toggleCart();
+    }, 600);
+  }
+
+  // ── Cart ──
+  function updateCartBadge() {
+    const badge = document.getElementById('cartBadge');
+    badge.textContent = cart.length;
+    badge.classList.toggle('visible', cart.length > 0);
+  }
+
+  function toggleCart() {
+    const overlay = document.getElementById('cartOverlay');
+    const sidebar = document.getElementById('cartSidebar');
+    const open = sidebar.classList.contains('visible');
+    if (open) {
+      sidebar.classList.remove('visible');
+      overlay.classList.remove('visible');
+      document.body.style.overflow = '';
+    } else {
+      renderCart();
+      sidebar.classList.add('visible');
+      overlay.classList.add('visible');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function calcPricing() {
+    const n = cart.length;
+    let subtotal = cart.reduce((s, c) => s + c.price, 0);
+    let discount = 0;
+    let shipping = 0;
+    let dealActive = false;
+
+    if (n === 0) return { subtotal: 0, discount: 0, shipping: 0, total: 0, dealActive: false };
+
+    if (n === 1) {
+      shipping = 29;
+    } else if (n >= 2) {
+      const over80 = cart.filter(c => c.price >= 80).length;
+      if (n >= 3 && over80 >= 2) {
+        const sorted = [...cart].sort((a, b) => a.price - b.price);
+        discount = Math.round(sorted[0].price * 50) / 100;
+        shipping = 14.99;
+        dealActive = true;
+      } else {
+        shipping = n * 10;
+      }
+    }
+    const vat = 2.99;
+    return { subtotal, discount, shipping, vat, total: subtotal - discount + shipping + vat, dealActive };
+  }
+
+  function renderCart() {
+    const container = document.getElementById('cartItems');
+    const footer = document.getElementById('cartFooter');
+    if (!cart.length) {
+      container.innerHTML = '<div class="cart-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>Your cart is empty</div>';
+      footer.style.display = 'none';
+      return;
+    }
+    let html = '';
+    cart.forEach((item, i) => {
+      html += '<div class="cart-item">' +
+        '<div class="cart-item-img"><img src="' + item.img + '" alt="' + item.name + '" loading="lazy" decoding="async"></div>' +
+        '<div class="cart-item-info">' +
+          '<div class="cart-item-name">' + item.name + '</div>' +
+          '<div class="cart-item-material">' + item.material + '</div>' +
+          '<div class="cart-item-price">' + item.price.toFixed(2) + ' €</div>' +
+        '</div>' +
+        '<button class="cart-item-remove" onclick="removeFromCart(' + i + ')">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+        '</button>' +
+      '</div>';
+    });
+    container.innerHTML = html;
+
+    const p = calcPricing();
+    let pricingHtml = '<div class="cart-pricing-rows">';
+    pricingHtml += '<div class="cart-pricing-row"><span>Subtotal</span><span>' + p.subtotal.toFixed(2) + ' €</span></div>';
+    if (p.discount > 0) {
+      pricingHtml += '<div class="cart-pricing-row cart-pricing-discount"><span>3rd wheel -50%</span><span>-' + p.discount.toFixed(2) + ' €</span></div>';
+    }
+    pricingHtml += '<div class="cart-pricing-row"><span>Shipping</span><span>' + p.shipping.toFixed(2) + ' €</span></div>';
+    pricingHtml += '<div class="cart-pricing-row"><span>VAT included</span><span>' + p.vat.toFixed(2) + ' €</span></div>';
+    pricingHtml += '</div>';
+    document.getElementById('cartPricing').innerHTML = pricingHtml;
+    document.getElementById('cartTotal').textContent = p.total.toFixed(2) + ' €';
+
+    let note = 'Wochen';
+    if (cart.length === 1) note = 'Add 1 more wheel for cheaper shipping!';
+    else if (cart.length === 2 && !p.dealActive) {
+      const over80 = cart.filter(c => c.price >= 80).length;
+      if (over80 >= 2) note = 'Add a 3rd wheel to get it at 50% off + 14.99 € shipping!';
+      else note = 'Wochen';
+    }
+    else if (p.dealActive) note = '2+1 deal applied! Shipping only 14.99 €';
+    document.getElementById('cartShippingNote').textContent = note;
+
+    footer.style.display = '';
+  }
+
+  function removeFromCart(index) {
+    cart.splice(index, 1);
+    saveCart();
+    updateCartBadge();
+    renderCart();
+  }
+
+  // Handle URL params
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlBrand = urlParams.get('brand');
+  const urlProduct = urlParams.get('product');
+
+  if (urlProduct) {
+    const p = getProductById(urlProduct);
+    if (p) {
+      showProducts(p.brand);
+      openProductModal(p);
+      history.replaceState({ product: p.id }, '', window.location);
+    }
+  } else if (urlBrand && BRANDS[urlBrand]) {
+    showProducts(urlBrand);
+  }
+
+  window.addEventListener('popstate', function() {
+    const params = new URLSearchParams(window.location.search);
+    const pid = params.get('product');
+    if (pid) {
+      const p = getProductById(pid);
+      if (p) {
+        if (productsSection.style.display === 'none') showProducts(p.brand);
+        openProductModal(p);
+        history.replaceState({ product: p.id }, '', window.location);
+      }
+    } else {
+      document.getElementById('productModal').classList.remove('visible');
+      document.body.style.overflow = '';
+      currentModalProduct = null;
+    }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeProductModal();
+      if (document.getElementById('cartSidebar').classList.contains('visible')) toggleCart();
+    }
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IkaShop — Admin Panel</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="brand">
+      <span class="brand-name">IkaShop</span>
+    </a>
+    <nav class="header-nav">
+      <a href="/">Home</a>
+      <a href="/shop">Shop</a>
+      <a href="/track">Track Order</a>
+      <a href="#" id="logoutBtn" style="display:none">Log out</a>
+    </nav>
+  </div>
+</header>
+
+<!-- LOGIN -->
+<div class="admin-login" id="loginSection">
+  <div class="login-card">
+    <div class="lock-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+    </div>
+    <h2>Admin Panel</h2>
+    <p class="subtitle">Restricted access — IkaShop operators only</p>
+    <form id="loginForm">
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="pwdInput" placeholder="Enter password">
+      </div>
+      <div class="error-msg" id="loginError">Incorrect password</div>
+      <button type="submit" class="btn btn-primary">Sign in</button>
+    </form>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="admin-container" id="dashboard">
+  <!-- TABS -->
+  <div class="admin-tabs">
+    <button class="admin-tab active" onclick="switchTab('orders')">Orders</button>
+    <button class="admin-tab" onclick="switchTab('shipments')">Shipments</button>
+    <button class="admin-tab" onclick="switchTab('promos')">Promos</button>
+    <button class="admin-tab" onclick="switchTab('security')">Security</button>
+  </div>
+
+  <div class="stats-row" id="statsRow"></div>
+
+  <!-- ORDERS TAB -->
+  <div id="tabOrders">
+    <div class="admin-header">
+      <h2>Order Management</h2>
+    </div>
+    <div class="table-container">
+      <div class="table-header"><h3>All orders</h3></div>
+      <div id="ordersBody"></div>
+    </div>
+  </div>
+
+  <!-- PROMOS TAB -->
+  <div id="tabPromos" style="display:none">
+    <div class="admin-header">
+      <h2>Promo Codes</h2>
+      <button class="btn btn-primary btn-sm" onclick="openPromoModal()">+ New code</button>
+    </div>
+    <div class="table-container">
+      <div class="table-header"><h3>All promo codes</h3></div>
+      <div id="promosBody"></div>
+    </div>
+  </div>
+
+  <!-- SHIPMENTS TAB -->
+  <div id="tabShipments" style="display:none">
+    <div class="admin-header">
+      <h2>Shipment Management</h2>
+      <button class="btn btn-primary btn-sm" onclick="openShipmentModal()">+ New package</button>
+    </div>
+    <div class="table-container">
+      <div class="table-header"><h3>All packages</h3></div>
+      <div id="tableBody"></div>
+    </div>
+  </div>
+
+  <!-- SECURITY TAB -->
+  <div id="tabSecurity" style="display:none">
+    <div class="admin-header">
+      <h2>IP Security</h2>
+    </div>
+
+    <!-- Block IP form -->
+    <div class="table-container" style="margin-bottom:24px">
+      <div class="table-header"><h3>Block an IP address</h3></div>
+      <div style="padding:16px;display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+        <div class="form-group" style="margin:0;flex:1;min-width:180px">
+          <label>IP Address</label>
+          <input type="text" id="blockIpInput" placeholder="192.168.1.1">
+        </div>
+        <div class="form-group" style="margin:0;flex:1;min-width:180px">
+          <label>Reason (optional)</label>
+          <input type="text" id="blockIpReason" placeholder="Suspicious activity">
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="blockIp()" style="background:#dc2626;border-color:#dc2626;height:38px">Block IP</button>
+      </div>
+    </div>
+
+    <!-- Blocked IPs list -->
+    <div class="table-container" style="margin-bottom:24px">
+      <div class="table-header"><h3>Blocked IPs</h3></div>
+      <div id="blockedIpsBody"></div>
+    </div>
+
+    <!-- IP Tracking Logs -->
+    <div class="table-container">
+      <div class="table-header" style="display:flex;justify-content:space-between;align-items:center">
+        <h3>IP Tracking Logs</h3>
+        <button class="btn btn-danger btn-sm" onclick="clearIpLogs()">Clear logs</button>
+      </div>
+      <div id="ipLogsBody"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SHIPMENT MODAL -->
+<div class="modal-overlay" id="shipmentModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="shipmentModalTitle">New package</h3>
+      <button class="modal-close" onclick="closeShipmentModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="shipmentForm">
+        <input type="hidden" id="editId">
+        <div class="form-group">
+          <label>Tracking number</label>
+          <input type="text" id="fTracking" placeholder="Auto-generated if empty">
+        </div>
+        <div class="form-group">
+          <label>Recipient name *</label>
+          <input type="text" id="fName" required>
+        </div>
+        <div class="form-group">
+          <label>Address *</label>
+          <input type="text" id="fAddress" required placeholder="123 Main Street">
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Postal code *</label><input type="text" id="fPostal" required placeholder="75001"></div>
+          <div class="form-group"><label>City *</label><input type="text" id="fCity" required placeholder="Paris"></div>
+        </div>
+        <div class="form-group">
+          <label>Estimated delivery date *</label>
+          <input type="date" id="fDelivery" required>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="fStatus">
+            <option value="registered">Registered</option>
+            <option value="in_transit">In Transit</option>
+            <option value="out_for_delivery">Out for Delivery</option>
+            <option value="delivered">Delivered</option>
+            <option value="delayed">Delayed</option>
+            <option value="returned">Returned</option>
+          </select>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeShipmentModal()">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="saveShipment()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <h3 id="orderModalTitle">Order details</h3>
+      <button class="modal-close" onclick="closeOrderModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="orderModalBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeOrderModal()">Close</button>
+      <button class="btn btn-primary btn-sm" id="orderSaveBtn" onclick="saveOrder()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROMO MODAL -->
+<div class="modal-overlay" id="promoModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>New promo code</h3>
+      <button class="modal-close" onclick="closePromoModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="promoForm">
+        <div class="form-group">
+          <label>Code *</label>
+          <input type="text" id="pCode" required placeholder="DRIFT15" style="text-transform:uppercase">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Type</label>
+            <select id="pType">
+              <option value="percent">Percentage (%)</option>
+              <option value="fixed">Fixed total (cents)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Value *</label>
+            <input type="number" id="pValue" required placeholder="15" min="1">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Max uses (0 = unlimited)</label>
+            <input type="number" id="pMaxUses" value="0" min="0">
+          </div>
+          <div class="form-group">
+            <label>Expires at (optional)</label>
+            <input type="datetime-local" id="pExpires">
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closePromoModal()">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="savePromo()">Create</button>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <span class="footer-brand">IKASHOP</span> &copy; 2026 — Admin Panel
+</footer>
+
+<script src="js/app.js"></script>
+<script>
+  const loginSection = document.getElementById('loginSection');
+  const dashboard = document.getElementById('dashboard');
+  const logoutBtn = document.getElementById('logoutBtn');
+  let cachedShipments = [];
+  let cachedOrders = [];
+  let editingOrderId = null;
+
+  if (sessionStorage.getItem('udx_auth') === '1') showDashboard();
+
+  document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (document.getElementById('pwdInput').value === ADMIN_PWD) {
+      sessionStorage.setItem('udx_auth', '1');
+      showDashboard();
+    } else {
+      document.getElementById('loginError').classList.add('visible');
+    }
+  });
+
+  logoutBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    sessionStorage.removeItem('udx_auth');
+    location.reload();
+  });
+
+  async function showDashboard() {
+    loginSection.style.display = 'none';
+    dashboard.classList.add('visible');
+    logoutBtn.style.display = '';
+    await refreshData();
+  }
+
+  async function refreshData() {
+    cachedShipments = await apiGetShipments();
+    await renderOrders();
+    renderShipmentsTable(cachedShipments);
+    renderStats();
+  }
+
+  let cachedPromos = [];
+
+  function switchTab(tab) {
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tabOrders').style.display = tab === 'orders' ? '' : 'none';
+    document.getElementById('tabShipments').style.display = tab === 'shipments' ? '' : 'none';
+    document.getElementById('tabPromos').style.display = tab === 'promos' ? '' : 'none';
+    document.getElementById('tabSecurity').style.display = tab === 'security' ? '' : 'none';
+    event.target.classList.add('active');
+    if (tab === 'promos') renderPromos();
+    if (tab === 'security') { renderBlockedIps(); renderIpLogs(); }
+  }
+
+  function renderStats() {
+    const totalOrders = cachedOrders.length;
+    const totalRevenue = cachedOrders.reduce((s, o) => s + parseFloat(o.price || 0), 0);
+    const transit = cachedShipments.filter(s => s.status === 'in_transit').length;
+    const delivered = cachedShipments.filter(s => s.status === 'delivered').length;
+    document.getElementById('statsRow').innerHTML =
+      '<div class="stat-card"><div class="stat-label">Orders</div><div class="stat-value">' + totalOrders + '</div></div>'
+      + '<div class="stat-card"><div class="stat-label">Revenue</div><div class="stat-value">' + totalRevenue.toFixed(2) + ' €</div></div>'
+      + '<div class="stat-card"><div class="stat-label"><span class="stat-dot" style="background:var(--blue)"></span> In Transit</div><div class="stat-value">' + transit + '</div></div>'
+      + '<div class="stat-card"><div class="stat-label"><span class="stat-dot" style="background:var(--green)"></span> Delivered</div><div class="stat-value">' + delivered + '</div></div>';
+  }
+
+  // ── ORDERS ──
+  async function renderOrders() {
+    try {
+      const res = await fetch('api.php?action=orders', { headers: { 'X-Admin-Password': ADMIN_PWD } });
+      cachedOrders = await res.json();
+      if (!cachedOrders.length) {
+        document.getElementById('ordersBody').innerHTML = '<div class="empty-state"><p>No orders yet</p></div>';
+        return;
+      }
+      let html = '<table><thead><tr><th>Order</th><th>Date</th><th>Customer</th><th>Email</th><th>Products</th><th>Promo</th><th>Price</th><th>Tracking</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+      cachedOrders.slice().reverse().forEach(o => {
+        const date = o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '—';
+        const statusClass = o.status === 'confirmed' ? 'badge-stock' : o.status === 'paid' ? 'badge-stock' : o.status === 'shipped' ? 'badge-premium' : o.status === 'delivered' ? 'badge-classic' : o.status === 'pending' ? 'badge-orange' : 'badge-sale';
+        const confirmBtn = o.status === 'pending' ? '<button class="btn btn-primary btn-sm" onclick="confirmOrder(\'' + o.id + '\')" style="background:#16a34a;border-color:#16a34a">Confirm</button>' : '';
+        html += '<tr>'
+          + '<td><strong>' + o.id + '</strong></td>'
+          + '<td>' + date + '</td>'
+          + '<td>' + (o.name || '—') + '<br><span style="font-size:11px;color:var(--text-muted)">' + (o.telegram || '') + '</span></td>'
+          + '<td style="font-size:12px">' + (o.email || '—') + '</td>'
+          + '<td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="' + (o.productName || '') + '">' + (o.productName || '—') + '</td>'
+          + '<td>' + (o.promoCode || '—') + '</td>'
+          + '<td><strong>' + (o.price ? parseFloat(o.price).toFixed(2) + ' €' : '—') + '</strong></td>'
+          + '<td style="font-size:12px">' + (o.trackingNumber || '—') + '</td>'
+          + '<td><span class="badge ' + statusClass + '">' + (o.status || 'unknown') + '</span></td>'
+          + '<td class="actions-cell">'
+            + confirmBtn
+            + '<button class="btn btn-outline btn-sm" onclick="viewOrder(\'' + o.id + '\')">View</button>'
+            + '<button class="btn btn-danger btn-sm" onclick="deleteOrder(\'' + o.id + '\')">Delete</button>'
+          + '</td></tr>';
+      });
+      html += '</tbody></table>';
+      document.getElementById('ordersBody').innerHTML = html;
+    } catch(e) {
+      document.getElementById('ordersBody').innerHTML = '<div class="empty-state"><p>Could not load orders</p></div>';
+    }
+  }
+
+  function viewOrder(orderId) {
+    const o = cachedOrders.find(x => x.id === orderId);
+    if (!o) return;
+    editingOrderId = orderId;
+    document.getElementById('orderModalTitle').textContent = 'Order ' + o.id;
+    document.getElementById('orderModalBody').innerHTML =
+      '<div class="form-group"><label>Customer name</label><input type="text" id="oName" value="' + (o.name || '') + '"></div>'
+      + '<div class="form-group"><label>Email</label><input type="email" id="oEmail" value="' + (o.email || '') + '"></div>'
+      + '<div class="form-group"><label>Telegram</label><input type="text" id="oTelegram" value="' + (o.telegram || '') + '"></div>'
+      + '<div class="form-group"><label>Phone</label><input type="text" id="oPhone" value="' + (o.phone || '') + '"></div>'
+      + '<div class="form-group"><label>Address</label><input type="text" id="oAddress" value="' + (o.address || '') + '"></div>'
+      + '<div class="form-row"><div class="form-group"><label>Postal</label><input type="text" id="oPostal" value="' + (o.postal || '') + '"></div><div class="form-group"><label>City</label><input type="text" id="oCity" value="' + (o.city || '') + '"></div></div>'
+      + '<div class="form-group"><label>Country</label><input type="text" id="oCountry" value="' + (o.country || '') + '"></div>'
+      + '<div class="form-group"><label>Products</label><input type="text" id="oProducts" value="' + (o.productName || '') + '" readonly style="background:var(--bg-alt)"></div>'
+      + '<div class="form-row"><div class="form-group"><label>Price paid</label><input type="text" id="oPrice" value="' + (o.price || '') + '"></div><div class="form-group"><label>Promo code</label><input type="text" id="oPromo" value="' + (o.promoCode || '') + '" readonly style="background:var(--bg-alt)"></div></div>'
+      + '<div class="form-row"><div class="form-group"><label>Tracking</label><input type="text" id="oTracking" value="' + (o.trackingNumber || '') + '" readonly style="background:var(--bg-alt)"></div><div class="form-group"><label>Status</label><select id="oStatus"><option value="pending"' + (o.status === 'pending' ? ' selected' : '') + '>Pending</option><option value="confirmed"' + (o.status === 'confirmed' ? ' selected' : '') + '>Confirmed</option><option value="paid"' + (o.status === 'paid' ? ' selected' : '') + '>Paid</option><option value="shipped"' + (o.status === 'shipped' ? ' selected' : '') + '>Shipped</option><option value="delivered"' + (o.status === 'delivered' ? ' selected' : '') + '>Delivered</option><option value="cancelled"' + (o.status === 'cancelled' ? ' selected' : '') + '>Cancelled</option><option value="refunded"' + (o.status === 'refunded' ? ' selected' : '') + '>Refunded</option></select></div></div>'
+      + '<div style="margin-top:12px;padding:12px;background:var(--bg-alt);border-radius:var(--radius-sm);font-size:12px;color:var(--text-muted)">Created: ' + (o.createdAt || '—') + '</div>';
+    document.getElementById('orderModal').classList.add('visible');
+  }
+
+  function closeOrderModal() {
+    document.getElementById('orderModal').classList.remove('visible');
+    editingOrderId = null;
+  }
+
+  async function saveOrder() {
+    if (!editingOrderId) return;
+    const data = {
+      id: editingOrderId,
+      name: document.getElementById('oName').value.trim(),
+      email: document.getElementById('oEmail').value.trim(),
+      telegram: document.getElementById('oTelegram').value.trim(),
+      phone: document.getElementById('oPhone').value.trim(),
+      address: document.getElementById('oAddress').value.trim(),
+      postal: document.getElementById('oPostal').value.trim(),
+      city: document.getElementById('oCity').value.trim(),
+      country: document.getElementById('oCountry').value.trim(),
+      price: document.getElementById('oPrice').value.trim(),
+      status: document.getElementById('oStatus').value
+    };
+    try {
+      const res = await fetch('api.php?action=orders', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Password': ADMIN_PWD },
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      if (result.error) return alert(result.error);
+      closeOrderModal();
+      await refreshData();
+    } catch(e) { alert('Error saving order'); }
+  }
+
+  async function confirmOrder(orderId) {
+    if (!confirm('Confirm this order? A confirmation email with tracking number will be sent to the customer.')) return;
+    try {
+      const res = await fetch('api.php?action=confirm-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Password': ADMIN_PWD },
+        body: JSON.stringify({ id: orderId })
+      });
+      const result = await res.json();
+      if (result.error) return alert(result.error);
+      alert('Order confirmed! Tracking: ' + result.trackingNumber + '\nConfirmation email sent.');
+      await refreshData();
+    } catch(e) { alert('Error confirming order'); }
+  }
+
+  async function deleteOrder(orderId) {
+    if (!confirm('Delete this order?')) return;
+    await fetch('api.php?action=orders&id=' + encodeURIComponent(orderId), {
+      method: 'DELETE',
+      headers: { 'X-Admin-Password': ADMIN_PWD }
+    });
+    await refreshData();
+  }
+
+  // ── SHIPMENTS ──
+  function renderShipmentsTable(all) {
+    if (!all.length) {
+      document.getElementById('tableBody').innerHTML = '<div class="empty-state"><p>No packages registered</p></div>';
+      return;
+    }
+    let html = '<table><thead><tr><th>Tracking #</th><th>Recipient</th><th>City</th><th>Delivery</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+    all.forEach(s => {
+      const st = STATUS_MAP[s.status] || STATUS_MAP.registered;
+      html += '<tr><td><strong>' + s.trackingNumber + '</strong></td><td>' + s.recipientName + '</td><td>' + s.recipientCity + '</td><td>' + formatDate(s.estimatedDelivery) + '</td><td><span class="badge ' + st.badge + '">' + st.labelEn + '</span></td><td class="actions-cell"><button class="btn btn-outline btn-sm" onclick="editShipment(\'' + s.trackingNumber + '\')">Edit</button><button class="btn btn-danger btn-sm" onclick="deleteShipment(\'' + s.trackingNumber + '\')">Delete</button></td></tr>';
+    });
+    html += '</tbody></table>';
+    document.getElementById('tableBody').innerHTML = html;
+  }
+
+  function openShipmentModal(editing) {
+    document.getElementById('shipmentModal').classList.add('visible');
+    if (!editing) {
+      document.getElementById('shipmentModalTitle').textContent = 'New package';
+      document.getElementById('shipmentForm').reset();
+      document.getElementById('editId').value = '';
+      document.getElementById('fTracking').value = '';
+      document.getElementById('fTracking').readOnly = false;
+      const d = new Date(); d.setDate(d.getDate() + 21);
+      document.getElementById('fDelivery').value = d.toISOString().split('T')[0];
+    }
+  }
+  function closeShipmentModal() { document.getElementById('shipmentModal').classList.remove('visible'); }
+
+  async function saveShipment() {
+    const name = document.getElementById('fName').value.trim();
+    const address = document.getElementById('fAddress').value.trim();
+    const postal = document.getElementById('fPostal').value.trim();
+    const city = document.getElementById('fCity').value.trim();
+    const delivery = document.getElementById('fDelivery').value;
+    const status = document.getElementById('fStatus').value;
+    if (!name || !address || !postal || !city || !delivery) return alert('Please fill in all required fields.');
+
+    const editId = document.getElementById('editId').value;
+    let result;
+    if (editId) {
+      result = await apiUpdateShipment({ trackingNumber: editId, recipientName: name, recipientAddress: address, recipientPostal: postal, recipientCity: city, estimatedDelivery: delivery, status: status });
+    } else {
+      let tracking = document.getElementById('fTracking').value.trim().toUpperCase() || '';
+      result = await apiCreateShipment({ trackingNumber: tracking, recipientName: name, recipientAddress: address, recipientPostal: postal, recipientCity: city, estimatedDelivery: delivery, status: status });
+    }
+    if (result.error) return alert(result.error);
+    closeShipmentModal();
+    await refreshData();
+  }
+
+  async function editShipment(tn) {
+    const s = cachedShipments.find(x => x.trackingNumber === tn);
+    if (!s) return;
+    document.getElementById('editId').value = s.trackingNumber;
+    document.getElementById('fTracking').value = s.trackingNumber;
+    document.getElementById('fTracking').readOnly = true;
+    document.getElementById('fName').value = s.recipientName;
+    document.getElementById('fAddress').value = s.recipientAddress;
+    document.getElementById('fPostal').value = s.recipientPostal;
+    document.getElementById('fCity').value = s.recipientCity;
+    document.getElementById('fDelivery').value = s.estimatedDelivery;
+    document.getElementById('fStatus').value = s.status;
+    document.getElementById('shipmentModalTitle').textContent = 'Edit package';
+    openShipmentModal(true);
+  }
+
+  async function deleteShipment(tn) {
+    if (!confirm('Delete this package?')) return;
+    await apiDeleteShipment(tn);
+    await refreshData();
+  }
+
+  // ── PROMOS ──
+  async function renderPromos() {
+    try {
+      const res = await fetch('api.php?action=promos', { headers: { 'X-Admin-Password': ADMIN_PWD } });
+      cachedPromos = await res.json();
+      if (!cachedPromos.length) {
+        document.getElementById('promosBody').innerHTML = '<div class="empty-state"><p>No promo codes</p></div>';
+        return;
+      }
+      let html = '<table><thead><tr><th>Code</th><th>Discount</th><th>Uses</th><th>Expires</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+      cachedPromos.forEach(p => {
+        const discountText = p.type === 'percent' ? '-' + p.value + '%' : p.value + ' cts (fixed)';
+        const usesText = p.maxUses > 0 ? p.usedCount + ' / ' + p.maxUses : p.usedCount + ' / ∞';
+        const now = new Date();
+        const expired = p.expiresAt && new Date(p.expiresAt) < now;
+        const maxedOut = p.maxUses > 0 && p.usedCount >= p.maxUses;
+        let statusBadge, statusText;
+        if (expired) { statusBadge = 'badge-red'; statusText = 'Expired'; }
+        else if (maxedOut) { statusBadge = 'badge-orange'; statusText = 'Max used'; }
+        else { statusBadge = 'badge-green'; statusText = 'Active'; }
+        const expiresText = p.expiresAt ? new Date(p.expiresAt).toLocaleString() : '—';
+        html += '<tr>'
+          + '<td><strong>' + p.code + '</strong></td>'
+          + '<td>' + discountText + '</td>'
+          + '<td>' + usesText + '</td>'
+          + '<td style="font-size:12px">' + expiresText + '</td>'
+          + '<td><span class="badge ' + statusBadge + '">' + statusText + '</span></td>'
+          + '<td class="actions-cell">'
+            + '<button class="btn btn-danger btn-sm" onclick="deletePromo(\'' + p.code + '\')">Delete</button>'
+          + '</td></tr>';
+      });
+      html += '</tbody></table>';
+      document.getElementById('promosBody').innerHTML = html;
+    } catch(e) {
+      document.getElementById('promosBody').innerHTML = '<div class="empty-state"><p>Could not load promos</p></div>';
+    }
+  }
+
+  function openPromoModal() {
+    document.getElementById('promoForm').reset();
+    document.getElementById('promoModal').classList.add('visible');
+  }
+  function closePromoModal() { document.getElementById('promoModal').classList.remove('visible'); }
+
+  async function savePromo() {
+    const code = document.getElementById('pCode').value.trim().toUpperCase();
+    const type = document.getElementById('pType').value;
+    const value = parseInt(document.getElementById('pValue').value);
+    const maxUses = parseInt(document.getElementById('pMaxUses').value) || 0;
+    const expiresInput = document.getElementById('pExpires').value;
+    const expiresAt = expiresInput ? new Date(expiresInput).toISOString() : '';
+    if (!code || !value) return alert('Code and value are required.');
+    try {
+      const res = await fetch('api.php?action=promos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Password': ADMIN_PWD },
+        body: JSON.stringify({ code, type, value, maxUses, expiresAt })
+      });
+      const result = await res.json();
+      if (result.error) return alert(result.error);
+      closePromoModal();
+      renderPromos();
+    } catch(e) { alert('Error creating promo'); }
+  }
+
+  async function deletePromo(code) {
+    if (!confirm('Delete promo code ' + code + '?')) return;
+    await fetch('api.php?action=promos&code=' + encodeURIComponent(code), {
+      method: 'DELETE',
+      headers: { 'X-Admin-Password': ADMIN_PWD }
+    });
+    renderPromos();
+  }
+
+  // ── SECURITY ──
+  async function renderBlockedIps() {
+    try {
+      const res = await fetch('api.php?action=blocked-ips', { headers: { 'X-Admin-Password': ADMIN_PWD } });
+      const blocked = await res.json();
+      if (!blocked.length) {
+        document.getElementById('blockedIpsBody').innerHTML = '<div class="empty-state"><p>No blocked IPs</p></div>';
+        return;
+      }
+      let html = '<table><thead><tr><th>IP Address</th><th>Reason</th><th>Blocked at</th><th>Actions</th></tr></thead><tbody>';
+      blocked.forEach(b => {
+        const date = b.blockedAt ? new Date(b.blockedAt).toLocaleString() : '—';
+        html += '<tr>'
+          + '<td><strong style="font-family:monospace;color:#dc2626">' + b.ip + '</strong></td>'
+          + '<td>' + (b.reason || '—') + '</td>'
+          + '<td style="font-size:12px">' + date + '</td>'
+          + '<td class="actions-cell"><button class="btn btn-outline btn-sm" onclick="unblockIp(\'' + b.ip + '\')">Unblock</button></td>'
+          + '</tr>';
+      });
+      html += '</tbody></table>';
+      document.getElementById('blockedIpsBody').innerHTML = html;
+    } catch(e) {
+      document.getElementById('blockedIpsBody').innerHTML = '<div class="empty-state"><p>Could not load blocked IPs</p></div>';
+    }
+  }
+
+  async function blockIp() {
+    const ip = document.getElementById('blockIpInput').value.trim();
+    const reason = document.getElementById('blockIpReason').value.trim();
+    if (!ip) return alert('Please enter an IP address.');
+    try {
+      const res = await fetch('api.php?action=blocked-ips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Password': ADMIN_PWD },
+        body: JSON.stringify({ ip, reason })
+      });
+      const result = await res.json();
+      if (result.error) return alert(result.error);
+      document.getElementById('blockIpInput').value = '';
+      document.getElementById('blockIpReason').value = '';
+      renderBlockedIps();
+    } catch(e) { alert('Error blocking IP'); }
+  }
+
+  async function unblockIp(ip) {
+    if (!confirm('Unblock ' + ip + '?')) return;
+    await fetch('api.php?action=blocked-ips&ip=' + encodeURIComponent(ip), {
+      method: 'DELETE',
+      headers: { 'X-Admin-Password': ADMIN_PWD }
+    });
+    renderBlockedIps();
+  }
+
+  async function renderIpLogs() {
+    try {
+      const res = await fetch('api.php?action=ip-logs', { headers: { 'X-Admin-Password': ADMIN_PWD } });
+      const logs = await res.json();
+      if (!logs.length) {
+        document.getElementById('ipLogsBody').innerHTML = '<div class="empty-state"><p>No tracking lookups recorded yet</p></div>';
+        return;
+      }
+      const grouped = {};
+      logs.forEach(l => {
+        if (!grouped[l.ip]) grouped[l.ip] = [];
+        grouped[l.ip].push(l);
+      });
+      let html = '<table><thead><tr><th>IP Address</th><th>Tracking Numbers</th><th>Last seen</th><th>Lookups</th><th>Actions</th></tr></thead><tbody>';
+      const entries = Object.entries(grouped).sort((a, b) => {
+        const lastA = new Date(a[1][a[1].length - 1].timestamp);
+        const lastB = new Date(b[1][b[1].length - 1].timestamp);
+        return lastB - lastA;
+      });
+      entries.forEach(([ip, items]) => {
+        const trackings = [...new Set(items.map(i => i.trackingNumber))];
+        const lastSeen = new Date(items[items.length - 1].timestamp).toLocaleString();
+        html += '<tr>'
+          + '<td><strong style="font-family:monospace">' + ip + '</strong></td>'
+          + '<td style="font-size:12px;max-width:250px;word-break:break-all">' + trackings.map(t => '<span class="badge badge-blue" style="margin:2px;display:inline-block">' + t + '</span>').join(' ') + '</td>'
+          + '<td style="font-size:12px">' + lastSeen + '</td>'
+          + '<td><strong>' + items.length + '</strong></td>'
+          + '<td class="actions-cell"><button class="btn btn-danger btn-sm" onclick="blockIpFromLog(\'' + ip + '\')">Block</button></td>'
+          + '</tr>';
+      });
+      html += '</tbody></table>';
+      document.getElementById('ipLogsBody').innerHTML = html;
+    } catch(e) {
+      document.getElementById('ipLogsBody').innerHTML = '<div class="empty-state"><p>Could not load IP logs</p></div>';
+    }
+  }
+
+  function blockIpFromLog(ip) {
+    document.getElementById('blockIpInput').value = ip;
+    document.getElementById('blockIpReason').value = 'Blocked from tracking logs';
+    blockIp();
+  }
+
+  async function clearIpLogs() {
+    if (!confirm('Clear all IP tracking logs?')) return;
+    await fetch('api.php?action=ip-logs', {
+      method: 'DELETE',
+      headers: { 'X-Admin-Password': ADMIN_PWD }
+    });
+    renderIpLogs();
+  }
+</script>
+
+</body>
+</html>

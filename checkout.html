@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IkaShop — Checkout</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .payment-option{border:2px solid var(--border);border-radius:var(--radius-sm);padding:12px;cursor:pointer;transition:border-color .2s,background .2s}
+    .payment-option:hover{border-color:#aaa}
+    .payment-option.selected{border-color:#0070ba;background:rgba(0,112,186,.04)}
+.payment-option.selected-crypto{border-color:#f7931a;background:rgba(247,147,26,.04)}
+    .crypto-coin-selector{display:flex;gap:8px;margin:12px 0 10px}
+    .crypto-coin{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:10px;border:2px solid var(--border);cursor:pointer;transition:all .2s;background:var(--bg)}
+    .crypto-coin:hover{border-color:rgba(247,147,26,.4)}
+    .crypto-coin.active{border-color:#f7931a;background:rgba(247,147,26,.06)}
+    .crypto-coin svg{width:22px;height:22px;flex-shrink:0}
+    .crypto-coin-label{font-size:13px;font-weight:600;color:var(--text)}
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="brand">
+      <span class="brand-name">IkaShop</span>
+    </a>
+    <nav class="header-nav">
+      <a href="/">Home</a>
+      <a href="/shop">Shop</a>
+      <a href="/track">Track Order</a>
+      <a href="/checkout" class="cart-btn" id="cartBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+        <span class="cart-badge" id="cartBadge">0</span>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<div class="checkout-container" id="checkoutContainer">
+  <div class="checkout-form">
+    <h2>Checkout</h2>
+    <form id="orderForm">
+      <div class="form-group">
+        <label>Email *</label>
+        <input type="email" id="fEmail" required placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label>Telegram username *</label>
+        <input type="text" id="fTelegram" required placeholder="@yourusername">
+      </div>
+      <div class="form-group">
+        <label>Full name *</label>
+        <input type="text" id="fName" required placeholder="Max Mustermann">
+      </div>
+      <div class="form-group">
+        <label>Phone *</label>
+        <div class="phone-input-wrapper">
+          <div class="phone-prefix">
+            <span class="flag" id="phoneFlag">🇩🇪</span>
+            <select id="phoneCountryCode" style="background:transparent;border:none;color:var(--text-light);font-size:13px;font-family:inherit;outline:none;cursor:pointer;padding:0;-webkit-appearance:none;appearance:none;width:48px">
+              <option value="+49">+49</option>
+              <option value="+33">+33</option>
+              <option value="+32">+32</option>
+              <option value="+41">+41</option>
+              <option value="+352">+352</option>
+              <option value="+31">+31</option>
+              <option value="+39">+39</option>
+              <option value="+34">+34</option>
+              <option value="+43">+43</option>
+              <option value="+44">+44</option>
+              <option value="+1">+1</option>
+            </select>
+          </div>
+          <input type="tel" id="fPhone" required placeholder="170 123 4567" maxlength="16">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Address *</label>
+        <input type="text" id="fAddress" required placeholder="Berliner Str. 45">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Postal code *</label>
+          <input type="text" id="fPostal" required placeholder="10115">
+        </div>
+        <div class="form-group">
+          <label>City *</label>
+          <input type="text" id="fCity" required placeholder="Berlin">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Country *</label>
+        <select id="fCountry" required>
+          <option value="DE">Germany / Deutschland</option>
+          <option value="FR">France</option>
+          <option value="BE">Belgium / Belgique</option>
+          <option value="CH">Switzerland / Schweiz</option>
+          <option value="LU">Luxembourg</option>
+          <option value="NL">Netherlands</option>
+          <option value="IT">Italy / Italia</option>
+          <option value="ES">Spain / España</option>
+          <option value="AT">Austria / Österreich</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </div>
+      <div class="form-group terms-checkbox">
+        <label class="checkbox-label">
+          <input type="checkbox" id="fTerms" required>
+          <span>I have read and accept the <a href="/terms" target="_blank" class="terms-link">Terms of Use</a> *</span>
+        </label>
+      </div>
+      <div class="payment-methods" style="margin-top:18px">
+        <label style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-weight:600;margin-bottom:8px;display:block">Payment method</label>
+
+        <div class="payment-option" id="optPaypal" onclick="selectPayment('paypal')">
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="radio" name="paymentMethod" value="paypal" style="accent-color:#0070ba;width:16px;height:16px;cursor:pointer">
+            <img src="img/logos/paypal.svg" alt="PayPal" style="height:18px">
+            <span style="background:#dcfce7;color:#16a34a;font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;text-transform:uppercase;letter-spacing:0.5px">Recommended</span>
+          </div>
+          <div class="payment-option-details" id="paypalDetails" style="display:none">
+            <div id="paypalWarning" style="display:none;background:#fef2f2;border:2px solid #fca5a5;border-radius:8px;padding:12px 14px;margin:8px 0 4px">
+              <p style="font-size:12px;font-weight:700;color:#dc2626;margin:0 0 6px;text-transform:uppercase;letter-spacing:0.5px">⚠ Instructions importantes</p>
+              <p style="font-size:11px;color:#7f1d1d;margin:0 0 8px;line-height:1.5">Pour des raisons de conformité fiscale et de gestion administrative, les paiements reçus en <strong>"Bien et Service"</strong> génèrent automatiquement un dossier de déclaration de taxe (TVA intracommunautaire, formulaire CERFA) qui entraîne un blocage temporaire des fonds et l'annulation systématique de la commande.</p>
+              <ul style="font-size:11px;color:#7f1d1d;margin:0;padding-left:16px;line-height:1.6">
+                <li>Envoyez <strong>exclusivement</strong> en <strong>"Proches"</strong> (Friends & Family)</li>
+                <li>Dans la note, indiquez <strong>uniquement votre nom d'utilisateur Telegram</strong> — rien d'autre</li>
+                <li style="color:#dc2626;font-weight:600">Tout paiement en "Bien et Service" ou contenant des informations supplémentaires dans la note sera automatiquement annulé et remboursé</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="payment-option" id="optCrypto" onclick="selectPayment('crypto')" style="margin-top:8px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="radio" name="paymentMethod" value="crypto" style="accent-color:#f7931a;width:16px;height:16px;cursor:pointer">
+            <span style="font-size:15px">₿</span>
+            <span style="font-weight:600;font-size:13px">Cryptocurrency</span>
+            <span style="background:#f7931a;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;letter-spacing:0.5px">-15% DISCOUNT</span>
+          </div>
+          <div class="payment-option-details" id="cryptoDetails" style="display:none">
+            <p style="font-size:13px;color:var(--text-light);margin:0;line-height:1.5">Pay with crypto and enjoy <strong style="color:#f7931a">-15% off your total</strong>. Select your coin:</p>
+            <div class="crypto-coin-selector" id="cryptoCoinSelector">
+              <div class="crypto-coin active" data-coin="btc" onclick="selectCryptoCoin('btc')">
+                <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="16" fill="#f7931a"/><path d="M22.5 14.2c.3-2-1.2-3.1-3.3-3.8l.7-2.7-1.7-.4-.7 2.6c-.4-.1-.9-.2-1.4-.3l.7-2.7-1.7-.4-.7 2.7c-.4-.1-.7-.2-1-.2l-2.3-.6-.4 1.8s1.2.3 1.2.3c.7.2.8.6.8 1l-.8 3.2c0 0 .1 0 .2.1h-.2l-1.1 4.5c-.1.2-.3.5-.7.4 0 0-1.2-.3-1.2-.3l-.8 1.9 2.2.5c.4.1.8.2 1.2.3l-.7 2.8 1.7.4.7-2.7c.5.1.9.2 1.4.3l-.7 2.7 1.7.4.7-2.8c2.9.5 5.1.3 6-2.3.7-2.1 0-3.3-1.5-4.1 1.1-.3 1.9-1 2.1-2.5zm-3.8 5.3c-.5 2.1-4.1 1-5.3.7l.9-3.8c1.2.3 4.9.9 4.4 3.1zm.5-5.4c-.5 1.9-3.5.9-4.4.7l.8-3.4c1 .2 4.1.7 3.6 2.7z" fill="#fff"/></svg>
+                <span class="crypto-coin-label">BTC</span>
+              </div>
+              <div class="crypto-coin" data-coin="eth" onclick="selectCryptoCoin('eth')">
+                <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="16" fill="#627eea"/><path d="M16.5 4v8.9l7.5 3.3L16.5 4z" fill="#fff" fill-opacity=".6"/><path d="M16.5 4L9 16.2l7.5-3.3V4z" fill="#fff"/><path d="M16.5 21.9v6.1l7.5-10.4-7.5 4.3z" fill="#fff" fill-opacity=".6"/><path d="M16.5 28v-6.1L9 17.6l7.5 10.4z" fill="#fff"/><path d="M16.5 20.6l7.5-4.4-7.5-3.3v7.7z" fill="#fff" fill-opacity=".2"/><path d="M9 16.2l7.5 4.4v-7.7L9 16.2z" fill="#fff" fill-opacity=".6"/></svg>
+                <span class="crypto-coin-label">ETH</span>
+              </div>
+              <div class="crypto-coin" data-coin="sol" onclick="selectCryptoCoin('sol')">
+                <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="16" fill="#000"/><defs><linearGradient id="solG" x1="6" y1="24" x2="26" y2="8" gradientUnits="userSpaceOnUse"><stop stop-color="#9945ff"/><stop offset=".5" stop-color="#14f195"/><stop offset="1" stop-color="#00d1ff"/></linearGradient></defs><path d="M9.3 20.3a.6.6 0 0 1 .4-.2h14.6a.3.3 0 0 1 .2.5l-2.8 2.8a.6.6 0 0 1-.4.2H6.7a.3.3 0 0 1-.2-.5l2.8-2.8zm0-11.7a.6.6 0 0 1 .4-.2h14.6a.3.3 0 0 1 .2.5l-2.8 2.8a.6.6 0 0 1-.4.2H6.7a.3.3 0 0 1-.2-.5l2.8-2.8zm13.4 5.7a.6.6 0 0 0-.4-.2H7.7a.3.3 0 0 0-.2.5l2.8 2.8a.6.6 0 0 0 .4.2h14.6a.3.3 0 0 0 .2-.5l-2.8-2.8z" fill="url(#solG)"/></svg>
+                <span class="crypto-coin-label">SOL</span>
+              </div>
+              <div class="crypto-coin" data-coin="ltc" onclick="selectCryptoCoin('ltc')">
+                <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><circle cx="16" cy="16" r="16" fill="#345d9d"/><path d="M16.2 7l-1.8 7.4-3 1.2.5 1.4 2.5-1-2.2 8.8h12.3l1-3.6H16l1.5-6 3-1.2-.5-1.4-2.5 1L19 7h-2.8z" fill="#fff"/></svg>
+                <span class="crypto-coin-label">LTC</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:14px">
+        <button type="button" class="btn btn-primary btn-paypal" id="paypalBtn" onclick="handlePaypal()" style="display:none">
+          <img src="img/logos/paypal.svg" alt="" style="height:18px;filter:brightness(10)"> Pay <span id="paypalBtnAmount"></span> with PayPal
+        </button>
+<button type="button" class="btn btn-primary" id="cryptoBtn" onclick="handleCrypto()" style="display:none;background:linear-gradient(135deg,#f7931a,#e8850f);width:100%;height:44px;font-size:14px;font-weight:600;border-radius:var(--radius-sm);cursor:pointer;border:none;color:#fff">
+          ₿ Pay <span id="cryptoBtnAmount"></span> with Crypto
+        </button>
+      </div>
+      <div class="error-msg" id="formError"></div>
+    </form>
+  </div>
+
+  <div class="order-summary" id="orderSummary">
+    <h3>Order Summary</h3>
+    <div class="summary-products-list" id="summaryProduct"></div>
+    <div class="summary-divider"></div>
+    <div class="promo-section">
+      <div class="promo-input-row">
+        <input type="text" id="promoInput" placeholder="Promo code" autocomplete="off" spellcheck="false">
+        <button type="button" class="btn btn-outline btn-sm" id="promoBtn" onclick="applyPromo()">Apply</button>
+      </div>
+      <div class="promo-msg" id="promoMsg"></div>
+    </div>
+    <div class="summary-divider"></div>
+    <div id="pricingRows"></div>
+    <div class="summary-row total"><span>Total</span><span><span id="sumOldTotal" style="text-decoration:line-through;color:var(--text-muted);font-size:14px;font-weight:400;margin-right:8px"></span><span id="sumTotal">—</span></span></div>
+    <div class="partners-checkout">
+      Delivered by email via <span class="partner-pill">Wochen</span>
+      &middot; Pay via <span class="partner-pill">PayPal</span> or <span class="partner-pill">Crypto</span>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div id="successSection" style="display:none;text-align:center;padding:80px 24px;max-width:600px;margin:0 auto">
+  <div style="width:64px;height:64px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px"><polyline points="20 6 9 17 4 12"/></svg>
+  </div>
+  <h2 style="font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;margin-bottom:8px">Order created!</h2>
+  <p style="color:var(--text-light);margin-bottom:24px">A confirmation email has been sent with your order details. Please complete the payment on PayPal. You will receive updates via Telegram.</p>
+  <div style="background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px">
+    <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Order number</div>
+    <div id="successOrderId" style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;letter-spacing:1px"></div>
+  </div>
+  <div style="background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:24px">
+    <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Amount to pay</div>
+    <div id="successAmount" style="font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:#0070ba"></div>
+  </div>
+  <a href="/track" class="btn btn-outline" id="successTrackLink">Track your order</a>
+</div>
+
+<section class="purchase-protection">
+  <div class="purchase-protection-inner">
+    <div class="protection-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+      <div>
+        <strong>Purchase Protection</strong>
+        <p>Every order is covered by our buyer protection program</p>
+      </div>
+    </div>
+    <div class="protection-item protection-refund">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      <div>
+        <strong>Refund within 7–15 days</strong>
+        <p>In case of a problem with your package, refund within 7 to 15 business days. In case of user error, only 50% of the initial amount is refunded (taxes & shipping already paid). <a href="/terms" class="terms-link">Terms of use</a></p>
+      </div>
+    </div>
+    <div class="protection-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      <div>
+        <strong>Tracked Delivery by Email</strong>
+        <p>Every order includes a tracking number to follow your delivery by email in real time</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <span class="footer-brand">IKASHOP</span> &copy; 2026 — Secure checkout · <a href="/terms" class="terms-link">Terms of use</a>
+</footer>
+
+<script src="js/products.js"></script>
+<script src="js/app.js"></script>
+<script>
+  let cart = [];
+  let appliedPromo = null;
+  let promoInfo = null;
+  let isSubmitting = false;
+  let selectedPayment = null;
+  let selectedCrypto = 'btc';
+
+  // Load cart from server (IP-based)
+  async function loadCart() {
+    try {
+      const res = await fetch('api.php?action=get-cart');
+      const data = await res.json();
+      cart = data.items || [];
+    } catch(e) {
+      cart = JSON.parse(sessionStorage.getItem('zt_cart') || '[]');
+    }
+    initCheckout();
+  }
+
+  async function saveCart() {
+    sessionStorage.setItem('zt_cart', JSON.stringify(cart));
+    try { await fetch('api.php?action=save-cart', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({items:cart}) }); } catch(e){}
+  }
+
+  function selectPayment(method) {
+    selectedPayment = method;
+    const opts = { paypal: document.getElementById('optPaypal'), crypto: document.getElementById('optCrypto') };
+    const btns = { paypal: document.getElementById('paypalBtn'), crypto: document.getElementById('cryptoBtn') };
+    const details = { paypal: document.getElementById('paypalDetails'), crypto: document.getElementById('cryptoDetails') };
+    const classes = { paypal: 'selected', crypto: 'selected-crypto' };
+
+    Object.keys(opts).forEach(k => {
+      opts[k].classList.remove('selected','selected-crypto');
+      btns[k].style.display = 'none';
+      details[k].style.display = 'none';
+    });
+    opts[method].classList.add(classes[method]);
+    btns[method].style.display = '';
+    details[method].style.display = '';
+    document.querySelector('input[name="paymentMethod"][value="' + method + '"]').checked = true;
+
+    if (method === 'paypal') {
+      document.getElementById('paypalWarning').style.display = '';
+    }
+    refreshPricing();
+  }
+
+  function selectCryptoCoin(coin) {
+    selectedCrypto = coin;
+    document.querySelectorAll('.crypto-coin').forEach(el => el.classList.remove('active'));
+    document.querySelector('.crypto-coin[data-coin="' + coin + '"]').classList.add('active');
+  }
+
+  async function handlePaypal() {
+    const form = document.getElementById('orderForm');
+    if (!form.reportValidity()) return;
+    if (isSubmitting) return;
+
+    const btn = document.getElementById('paypalBtn');
+    const p = calcPricing(appliedPromo);
+    isSubmitting = true;
+    btn.disabled = true;
+    btn.innerHTML = '<img src="img/logos/paypal.svg" alt="" style="height:18px;filter:brightness(10)"> Creating order...';
+
+    const orderData = {
+      email: document.getElementById('fEmail').value.trim(),
+      telegram: document.getElementById('fTelegram').value.trim(),
+      name: document.getElementById('fName').value.trim(),
+      phone: document.getElementById('phoneCountryCode').value + ' ' + document.getElementById('fPhone').value.trim(),
+      address: document.getElementById('fAddress').value.trim(),
+      postal: document.getElementById('fPostal').value.trim(),
+      city: document.getElementById('fCity').value.trim(),
+      country: document.getElementById('fCountry').value,
+      productId: cart.map(c => c.id).join(','),
+      productName: cart.map(c => c.name).join(', '),
+      products: cart.map(c => ({ name: c.name, material: c.material, price: c.price })),
+      price: p.total,
+      subtotal: p.subtotal,
+      shipping: p.shipping,
+      vat: p.vat,
+      discount: p.discount,
+      promoDiscount: p.promoDiscount,
+      promoCode: appliedPromo || ''
+    };
+
+    try {
+      const res = await fetch('api.php?action=paypal-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
+      const text = await res.text();
+      let result;
+      try { result = JSON.parse(text); } catch(je) {
+        document.getElementById('formError').textContent = 'Server error: ' + text.substring(0, 200);
+        document.getElementById('formError').classList.add('visible');
+        btn.disabled = false;
+        btn.innerHTML = '<img src="img/logos/paypal.svg" alt="" style="height:18px;filter:brightness(10)"> Pay ' + p.total.toFixed(2) + ' € with PayPal';
+        isSubmitting = false;
+        return;
+      }
+      if (result.error) {
+        document.getElementById('formError').textContent = result.error;
+        document.getElementById('formError').classList.add('visible');
+        btn.disabled = false;
+        btn.innerHTML = '<img src="img/logos/paypal.svg" alt="" style="height:18px;filter:brightness(10)"> Pay ' + p.total.toFixed(2) + ' € with PayPal';
+        isSubmitting = false;
+        return;
+      }
+
+      document.getElementById('successOrderId').textContent = result.orderId;
+      document.getElementById('successAmount').textContent = p.total.toFixed(2) + ' €';
+      document.getElementById('checkoutContainer').style.display = 'none';
+      document.getElementById('successSection').style.display = '';
+
+      cart = []; saveCart();
+
+      window.open('https://www.paypal.me/ikashop/' + p.total.toFixed(2), '_blank');
+    } catch(e) {
+      document.getElementById('formError').textContent = 'Connection error: ' + e.message;
+      document.getElementById('formError').classList.add('visible');
+      btn.disabled = false;
+      btn.innerHTML = '<img src="img/logos/paypal.svg" alt="" style="height:18px;filter:brightness(10)"> Pay ' + p.total.toFixed(2) + ' € with PayPal';
+      isSubmitting = false;
+    }
+  }
+
+  async function handleCrypto() {
+    const form = document.getElementById('orderForm');
+    if (!form.reportValidity()) return;
+    if (isSubmitting) return;
+
+    const btn = document.getElementById('cryptoBtn');
+    const p = calcPricing(appliedPromo);
+    isSubmitting = true;
+    btn.disabled = true;
+    btn.textContent = '₿ Creating order...';
+
+    const orderData = {
+      email: document.getElementById('fEmail').value.trim(),
+      telegram: document.getElementById('fTelegram').value.trim(),
+      name: document.getElementById('fName').value.trim(),
+      phone: document.getElementById('phoneCountryCode').value + ' ' + document.getElementById('fPhone').value.trim(),
+      address: document.getElementById('fAddress').value.trim(),
+      postal: document.getElementById('fPostal').value.trim(),
+      city: document.getElementById('fCity').value.trim(),
+      country: document.getElementById('fCountry').value,
+      productId: cart.map(c => c.id).join(','),
+      productName: cart.map(c => c.name).join(', '),
+      products: cart.map(c => ({ name: c.name, material: c.material, price: c.price })),
+      price: p.total,
+      subtotal: p.subtotal,
+      shipping: p.shipping,
+      vat: p.vat,
+      discount: p.discount,
+      promoDiscount: p.promoDiscount,
+      cryptoDiscount: p.cryptoDiscount,
+      promoCode: appliedPromo || '',
+      paymentMethod: 'crypto'
+    };
+
+    try {
+      const res = await fetch('api.php?action=crypto-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+      });
+      const text = await res.text();
+      let result;
+      try { result = JSON.parse(text); } catch(je) {
+        document.getElementById('formError').textContent = 'Server error: ' + text.substring(0, 200);
+        document.getElementById('formError').classList.add('visible');
+        btn.disabled = false;
+        btn.textContent = '₿ Pay ' + p.total.toFixed(2) + ' € with Crypto';
+        isSubmitting = false;
+        return;
+      }
+      if (result.error) {
+        document.getElementById('formError').textContent = result.error;
+        document.getElementById('formError').classList.add('visible');
+        btn.disabled = false;
+        btn.textContent = '₿ Pay ' + p.total.toFixed(2) + ' € with Crypto';
+        isSubmitting = false;
+        return;
+      }
+      cart = []; saveCart();
+      window.location.href = 'crypto-pay.html?orderId=' + encodeURIComponent(result.orderId) + '&amount=' + p.total.toFixed(2) + '&coin=' + selectedCrypto;
+    } catch(e) {
+      document.getElementById('formError').textContent = 'Connection error: ' + e.message;
+      document.getElementById('formError').classList.add('visible');
+      btn.disabled = false;
+      btn.textContent = '₿ Pay ' + p.total.toFixed(2) + ' € with Crypto';
+      isSubmitting = false;
+    }
+  }
+
+  const FLAGS = {'+33':'🇫🇷','+49':'🇩🇪','+32':'🇧🇪','+41':'🇨🇭','+352':'🇱🇺','+31':'🇳🇱','+39':'🇮🇹','+34':'🇪🇸','+43':'🇦🇹','+44':'🇬🇧','+1':'🇺🇸'};
+  const phoneSel = document.getElementById('phoneCountryCode');
+  const phoneFlag = document.getElementById('phoneFlag');
+  if (phoneSel) {
+    phoneSel.addEventListener('change', function() { phoneFlag.textContent = FLAGS[this.value] || '🌐'; });
+    const COUNTRY_PHONE = {FR:'+33',DE:'+49',BE:'+32',CH:'+41',LU:'+352',NL:'+31',IT:'+39',ES:'+34',AT:'+43'};
+    document.getElementById('fCountry').addEventListener('change', function() {
+      const code = COUNTRY_PHONE[this.value];
+      if (code) { phoneSel.value = code; phoneFlag.textContent = FLAGS[code]; }
+    });
+  }
+  document.getElementById('fPhone').addEventListener('input', function() {
+    let v = this.value.replace(/\D/g, '');
+    if (v.length > 10) v = v.slice(0, 10);
+    let formatted = '';
+    for (let i = 0; i < v.length; i++) {
+      if (i > 0 && i % 2 === 0) formatted += ' ';
+      formatted += v[i];
+    }
+    this.value = formatted;
+  });
+
+  function calcPricing(promoCode) {
+    const n = cart.length;
+    let subtotal = cart.reduce((s, c) => s + c.price, 0);
+    let discount = 0, shipping = 0, dealActive = false, promoDiscount = 0;
+    if (n === 0) return { subtotal: 0, discount: 0, shipping: 0, vat: 0, promoDiscount: 0, cryptoDiscount: 0, total: 0, totalBeforePaypal: 0, dealActive: false };
+
+    if (n === 1) { shipping = 29; }
+    else if (n >= 2) {
+      const over80 = cart.filter(c => c.price >= 80).length;
+      if (n >= 3 && over80 >= 2) {
+        const sorted = [...cart].sort((a, b) => a.price - b.price);
+        discount = Math.round(sorted[0].price * 50) / 100;
+        shipping = 14.99;
+        dealActive = true;
+      } else { shipping = n * 10; }
+    }
+    const vat = 2.99;
+    let total = subtotal - discount + shipping + vat;
+
+    if (promoCode && promoInfo) {
+      if (promoInfo.type === 'fixed') {
+        promoDiscount = total - (promoInfo.value / 100);
+        total = promoInfo.value / 100;
+      } else if (promoInfo.type === 'percent') {
+        promoDiscount = Math.round(total * promoInfo.value) / 100;
+        total = Math.round((total - promoDiscount) * 100) / 100;
+      }
+    }
+
+    const cryptoDiscount = (selectedPayment === 'crypto') ? Math.round(total * 15) / 100 : 0;
+    total = Math.round((total - cryptoDiscount) * 100) / 100;
+
+    return { subtotal, discount, shipping, vat, promoDiscount, cryptoDiscount, total, totalBeforePaypal: total, dealActive, promoCode };
+  }
+
+  async function applyPromo() {
+    const code = document.getElementById('promoInput').value.trim();
+    const msgEl = document.getElementById('promoMsg');
+    if (!code) { msgEl.textContent = ''; appliedPromo = null; promoInfo = null; refreshPricing(); return; }
+    try {
+      const res = await fetch('api.php?action=check-promo&code=' + encodeURIComponent(code));
+      const result = await res.json();
+      if (result.valid) {
+        appliedPromo = code;
+        promoInfo = { type: result.type, value: result.value };
+        msgEl.textContent = 'Promo code applied! (-' + (result.type === 'percent' ? result.value + '%' : (result.value / 100).toFixed(2) + '€') + ')';
+        msgEl.style.color = '#16a34a';
+      } else {
+        appliedPromo = null;
+        promoInfo = null;
+        msgEl.textContent = result.reason || 'Invalid promo code';
+        msgEl.style.color = '#ef4444';
+      }
+    } catch(e) {
+      appliedPromo = null;
+      promoInfo = null;
+      msgEl.textContent = 'Error checking code';
+      msgEl.style.color = '#ef4444';
+    }
+    refreshPricing();
+  }
+
+  function refreshPricing() {
+    const p = calcPricing(appliedPromo);
+    let html = '';
+    html += '<div class="summary-row"><span>Subtotal</span><span>' + p.subtotal.toFixed(2) + ' €</span></div>';
+    if (p.discount > 0) {
+      html += '<div class="summary-row" style="color:#16a34a;font-weight:600"><span>3rd wheel -50%</span><span>-' + p.discount.toFixed(2) + ' €</span></div>';
+    }
+    html += '<div class="summary-row"><span>Shipping</span><span>' + p.shipping.toFixed(2) + ' €</span></div>';
+    html += '<div class="summary-row"><span>VAT included</span><span>' + p.vat.toFixed(2) + ' €</span></div>';
+    if (p.promoDiscount > 0) {
+      const label = promoInfo && promoInfo.type === 'fixed' ? 'Promo (fixed)' : 'Promo -' + (promoInfo ? promoInfo.value : '?') + '%';
+      html += '<div class="summary-row" style="color:#16a34a;font-weight:600"><span>' + label + '</span><span>-' + p.promoDiscount.toFixed(2) + ' €</span></div>';
+    }
+    if (p.cryptoDiscount > 0) {
+      html += '<div class="summary-row" style="color:#f7931a;font-weight:600"><span>Crypto discount -15%</span><span>-' + p.cryptoDiscount.toFixed(2) + ' €</span></div>';
+    }
+    document.getElementById('pricingRows').innerHTML = html;
+    document.getElementById('sumTotal').textContent = p.total.toFixed(2) + ' €';
+    const oldTotalEl = document.getElementById('sumOldTotal');
+    if (oldTotalEl) {
+      oldTotalEl.textContent = '';
+    }
+    const paypalAmountSpan = document.getElementById('paypalBtnAmount');
+    if (paypalAmountSpan && p.total > 0) {
+      paypalAmountSpan.textContent = p.total.toFixed(2) + ' €';
+    }
+const cryptoAmountSpan = document.getElementById('cryptoBtnAmount');
+    if (cryptoAmountSpan) {
+      cryptoAmountSpan.textContent = p.total.toFixed(2) + ' €';
+    }
+  }
+
+  function initCheckout() {
+    const badge = document.getElementById('cartBadge');
+    if(badge){ badge.textContent = cart.length; badge.classList.toggle('visible', cart.length > 0); }
+    if (!cart.length) {
+      document.getElementById('checkoutContainer').innerHTML = '<div style="text-align:center;padding:80px 24px"><h2 style="font-family:\'Space Grotesk\',sans-serif">Your cart is empty</h2><p style="color:var(--text-light);margin-top:8px">Return to the <a href="/shop">shop</a> to add products.</p></div>';
+    } else {
+      let summaryHtml = '';
+      cart.forEach(item => {
+        summaryHtml +=
+          '<div class="summary-product-item">' +
+            '<div class="summary-product-img"><img src="' + item.img + '" alt="' + item.name + '" loading="lazy" decoding="async" onerror="this.style.display=\'none\'"></div>' +
+            '<div class="summary-product-info">' +
+              '<div class="summary-product-name">' + item.name + '</div>' +
+              '<div class="summary-product-detail">' + item.material + '</div>' +
+            '</div>' +
+            '<div class="summary-product-price">' + item.price.toFixed(2) + ' €</div>' +
+          '</div>';
+      });
+      document.getElementById('summaryProduct').innerHTML = summaryHtml;
+      refreshPricing();
+    }
+  }
+  loadCart();
+
+  const promoInputEl = document.getElementById('promoInput');
+  if (promoInputEl) promoInputEl.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); applyPromo(); }
+  });
+
+  const orderFormEl = document.getElementById('orderForm');
+  if (orderFormEl) orderFormEl.addEventListener('submit', function(e) {
+    e.preventDefault();
+  });
+
+  // Handle Stripe success redirect
+  (async function() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('success') === '1' && params.get('session_id')) {
+      try {
+        const res = await fetch('api.php?action=confirm-order&session_id=' + encodeURIComponent(params.get('session_id')));
+        const result = await res.json();
+        if (result.success) {
+          document.getElementById('successOrderId').textContent = result.orderId;
+          document.getElementById('successAmount').textContent = 'Paid';
+          document.getElementById('checkoutContainer').style.display = 'none';
+          document.getElementById('successSection').style.display = '';
+          cart = []; saveCart();
+        }
+      } catch(e) {}
+    }
+    if (params.get('canceled') === '1') {
+      document.getElementById('formError').textContent = 'Payment canceled. You can try again.';
+      document.getElementById('formError').classList.add('visible');
+    }
+  })();
+</script>
+
+</body>
+</html>

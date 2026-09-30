@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IkaShop — Crypto Payment</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#0a0a0f;color:#e4e4e7;font-family:'Inter',system-ui,-apple-system,sans-serif;min-height:100vh;overflow-x:hidden}
+
+    .header{background:rgba(10,10,15,.95);border-bottom:1px solid rgba(255,255,255,.06);padding:16px 24px;backdrop-filter:blur(12px);position:sticky;top:0;z-index:10}
+    .header-inner{max-width:680px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+    .brand{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;letter-spacing:4px;color:#fff;text-decoration:none}
+    .header-badge{display:flex;align-items:center;gap:6px;font-size:11px;color:#f7931a;background:rgba(247,147,26,.12);padding:4px 10px;border-radius:6px;font-weight:600;letter-spacing:.5px}
+    .header-badge img{width:16px;height:16px;border-radius:50%}
+
+    .main{max-width:520px;margin:0 auto;padding:40px 20px 80px}
+
+    .coin-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:20px;margin-bottom:20px}
+    .coin-badge.btc{background:rgba(247,147,26,.12);color:#f7931a}
+    .coin-badge.eth{background:rgba(98,126,234,.12);color:#627eea}
+    .coin-badge.sol{background:rgba(153,69,255,.12);color:#b06cf9}
+    .coin-badge.ltc{background:rgba(52,93,157,.12);color:#6b9fd4}
+    .coin-badge-icon{width:20px;height:20px}
+    .coin-badge-name{font-size:13px;font-weight:700;letter-spacing:.5px}
+
+    .order-card{background:linear-gradient(135deg,rgba(247,147,26,.08),rgba(247,147,26,.02));border:1px solid rgba(247,147,26,.2);border-radius:16px;padding:28px;margin-bottom:28px;text-align:center}
+    .order-label{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#71717a;margin-bottom:4px}
+    .order-id{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#fff;letter-spacing:1px;margin-bottom:16px}
+    .order-amount-eur{font-size:15px;color:#a1a1aa;margin-bottom:4px}
+    .order-amount-crypto{font-size:34px;font-weight:700;color:#fff;font-family:'Space Grotesk',sans-serif;word-break:break-all}
+    .order-amount-crypto .sym{font-size:20px;color:#f7931a;margin-left:6px;font-weight:600}
+
+    .pay-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;margin-bottom:28px}
+    .pay-section{padding:24px}
+    .pay-section+.pay-section{border-top:1px solid rgba(255,255,255,.06)}
+    .pay-label{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#71717a;margin-bottom:8px;font-weight:600}
+
+    .wallet-row{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px 14px}
+    .wallet-address{flex:1;font-family:'Space Grotesk',monospace;font-size:13px;color:#d4d4d8;word-break:break-all;line-height:1.5}
+    .copy-btn{flex-shrink:0;background:rgba(247,147,26,.15);border:1px solid rgba(247,147,26,.3);color:#f7931a;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:.5px}
+    .copy-btn:hover{background:rgba(247,147,26,.25)}
+    .copy-btn.copied{background:#16a34a;border-color:#16a34a;color:#fff}
+
+    .qr-container{display:flex;justify-content:center;padding:24px}
+    .qr-wrapper{background:#fff;border-radius:16px;padding:14px;display:inline-block;box-shadow:0 0 40px rgba(247,147,26,.1)}
+    .qr-wrapper img{display:block;border-radius:8px;width:220px;height:220px}
+
+    .rate-info{font-size:13px;color:#71717a;text-align:center}
+    .rate-info strong{color:#a1a1aa}
+
+    .timer-section{text-align:center}
+    .timer-ring{position:relative;width:120px;height:120px;margin:0 auto 16px}
+    .timer-ring svg{transform:rotate(-90deg)}
+    .timer-ring circle{fill:none;stroke-width:4}
+    .timer-ring .bg{stroke:rgba(255,255,255,.06)}
+    .timer-ring .progress{stroke:#f7931a;stroke-linecap:round;transition:stroke-dashoffset 1s linear,stroke .3s}
+    .timer-ring .progress.warning{stroke:#ef4444}
+    .timer-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .timer-digits{font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;color:#fff;letter-spacing:1px}
+    .timer-label{font-size:11px;color:#71717a;text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+
+    .timer-bar{width:100%;height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-top:12px}
+    .timer-bar-fill{height:100%;background:#f7931a;border-radius:2px;transition:width 1s linear,background .3s}
+    .timer-bar-fill.warning{background:#ef4444}
+
+    .warning-box{margin-top:28px;background:rgba(247,147,26,.08);border:1px solid rgba(247,147,26,.2);border-radius:12px;padding:16px 20px;display:flex;gap:12px;align-items:flex-start}
+    .warning-box svg{flex-shrink:0;width:20px;height:20px;color:#f7931a;margin-top:1px}
+    .warning-box p{font-size:13px;color:#a1a1aa;line-height:1.6}
+    .warning-box strong{color:#e4e4e7}
+
+    .expired-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);z-index:100;align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:24px}
+    .expired-overlay.visible{display:flex}
+    .expired-icon{width:64px;height:64px;border-radius:50%;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center}
+    .expired-icon svg{width:32px;height:32px;color:#ef4444}
+    .expired-title{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:#fff}
+    .expired-text{font-size:14px;color:#a1a1aa;text-align:center;max-width:360px;line-height:1.6}
+    .expired-btn{background:#f7931a;color:#fff;border:none;padding:14px 32px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;transition:background .2s}
+    .expired-btn:hover{background:#e8850f}
+
+    .loading{text-align:center;padding:60px 20px}
+    .loading-spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,.1);border-top-color:#f7931a;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading-text{font-size:14px;color:#71717a}
+
+    @media(max-width:480px){
+      .order-amount-crypto{font-size:26px}
+      .wallet-address{font-size:11px}
+      .qr-wrapper img{width:180px;height:180px}
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <a href="/" class="brand">IKASHOP</a>
+    <span class="header-badge" id="headerBadge">CRYPTO PAYMENT</span>
+  </div>
+</div>
+
+<div class="main">
+  <div id="loadingState" class="loading">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading payment details...</div>
+  </div>
+
+  <div id="paymentContent" style="display:none">
+    <div style="text-align:center">
+      <div class="coin-badge" id="coinBadge">
+        <span class="coin-badge-name" id="coinBadgeName">—</span>
+      </div>
+    </div>
+
+    <div class="order-card">
+      <div class="order-label">Order</div>
+      <div class="order-id" id="dispOrderId">—</div>
+      <div class="order-amount-eur" id="dispAmountEur">—</div>
+      <div class="order-amount-crypto" id="dispAmountCrypto">—</div>
+    </div>
+
+    <div class="pay-card">
+      <div class="pay-section">
+        <div class="pay-label">Wallet address</div>
+        <div class="wallet-row">
+          <div class="wallet-address" id="walletAddress">—</div>
+          <button class="copy-btn" id="copyBtn" onclick="copyAddress()">COPY</button>
+        </div>
+      </div>
+
+      <div class="qr-container">
+        <div class="qr-wrapper">
+          <img id="qrImage" src="" alt="QR Code">
+        </div>
+      </div>
+
+      <div class="pay-section">
+        <div class="rate-info" id="rateInfo">Loading exchange rate...</div>
+      </div>
+    </div>
+
+    <div class="timer-section">
+      <div class="timer-ring">
+        <svg width="120" height="120" viewBox="0 0 120 120">
+          <circle class="bg" cx="60" cy="60" r="54"/>
+          <circle class="progress" id="timerCircle" cx="60" cy="60" r="54" stroke-dasharray="339.292" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-text">
+          <div class="timer-digits" id="timerDigits">10:00</div>
+          <div class="timer-label">remaining</div>
+        </div>
+      </div>
+      <div class="timer-bar">
+        <div class="timer-bar-fill" id="timerBar" style="width:100%"></div>
+      </div>
+    </div>
+
+    <div class="warning-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <div>
+        <p><strong>Send the exact amount shown above.</strong> Sending a different amount may delay or prevent your order from being processed. Payment is verified manually — you will receive a confirmation on Telegram.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="expired-overlay" id="expiredOverlay">
+  <div class="expired-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+  </div>
+  <div class="expired-title">Session Expired</div>
+  <div class="expired-text">The payment window has closed. Crypto prices may have changed. Please return to checkout and try again.</div>
+  <a href="/checkout" class="expired-btn">Back to Checkout</a>
+</div>
+
+<script>
+  const WALLETS = {
+    btc: 'bc1qywdd5kv90gfpcwfvd7tyhgk3m3dukw9sy4t4z5',
+    eth: '0xF9054B8a64B0e57B7052D7f2A329085561BE4B82',
+    sol: 'F9BALaw27R3mXUa9AVqqt3wHV87G35MQLEfhsf24hKhd',
+    ltc: 'ltc1q59alw52hrmv64nnm36tt2plcasfjr90yskp5sl'
+  };
+  const COIN_NAMES = { btc: 'Bitcoin', eth: 'Ethereum', sol: 'Solana', ltc: 'Litecoin' };
+  const COIN_DECIMALS = { btc: 8, eth: 8, sol: 6, ltc: 8 };
+  const QR_IMAGES = {
+    btc: 'img/Crypto/btc.png',
+    eth: 'img/Crypto/eth.png',
+    sol: 'img/Crypto/solana.png',
+    ltc: 'img/Crypto/Litecoin.png'
+  };
+
+  const params = new URLSearchParams(window.location.search);
+  const orderId = params.get('orderId') || '—';
+  const amountEur = parseFloat(params.get('amount')) || 0;
+  const coin = ['btc','eth','sol','ltc'].includes(params.get('coin')) ? params.get('coin') : 'btc';
+
+  let rates = {};
+  let timerInterval = null;
+  let secondsLeft = 600;
+  const TOTAL_SECONDS = 600;
+  const CIRCUMFERENCE = 2 * Math.PI * 54;
+
+  async function init() {
+    document.getElementById('dispOrderId').textContent = orderId;
+    document.getElementById('dispAmountEur').textContent = amountEur.toFixed(2) + ' € total';
+
+    try {
+      const res = await fetch('api.php?action=crypto-rates');
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      rates = data;
+    } catch(e) {
+      rates = { btc: 85000, eth: 3200, sol: 140, ltc: 70 };
+    }
+
+    const rate = rates[coin] || 1;
+    const decimals = COIN_DECIMALS[coin];
+    const cryptoAmount = amountEur / rate;
+    const formatted = cryptoAmount.toFixed(decimals);
+
+    const badge = document.getElementById('coinBadge');
+    badge.classList.add(coin);
+    document.getElementById('coinBadgeName').textContent = COIN_NAMES[coin] + ' (' + coin.toUpperCase() + ')';
+
+    document.getElementById('dispAmountCrypto').innerHTML = formatted + ' <span class="sym">' + coin.toUpperCase() + '</span>';
+    document.getElementById('walletAddress').textContent = WALLETS[coin];
+    document.getElementById('qrImage').src = QR_IMAGES[coin];
+
+    const rateFormatted = rate.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    document.getElementById('rateInfo').innerHTML = '1 ' + coin.toUpperCase() + ' = <strong>' + rateFormatted + ' €</strong> &middot; ' + COIN_NAMES[coin];
+
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('paymentContent').style.display = '';
+
+    startTimer();
+  }
+
+  function copyAddress() {
+    navigator.clipboard.writeText(WALLETS[coin]).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = 'COPIED!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function startTimer() {
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+      secondsLeft--;
+      if (secondsLeft <= 0) {
+        clearInterval(timerInterval);
+        secondsLeft = 0;
+        updateTimerDisplay();
+        document.getElementById('expiredOverlay').classList.add('visible');
+        return;
+      }
+      updateTimerDisplay();
+    }, 1000);
+  }
+
+  function updateTimerDisplay() {
+    const m = Math.floor(secondsLeft / 60);
+    const s = secondsLeft % 60;
+    document.getElementById('timerDigits').textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+
+    const pct = secondsLeft / TOTAL_SECONDS;
+    const offset = CIRCUMFERENCE * (1 - pct);
+    const circle = document.getElementById('timerCircle');
+    circle.style.strokeDashoffset = offset;
+
+    const bar = document.getElementById('timerBar');
+    bar.style.width = (pct * 100) + '%';
+
+    const isWarning = secondsLeft < 120;
+    circle.classList.toggle('warning', isWarning);
+    bar.classList.toggle('warning', isWarning);
+  }
+
+  init();
+</script>
+</body>
+</html>

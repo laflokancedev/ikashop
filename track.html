@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IkaShop — Track Order</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="brand">
+      <span class="brand-name">IkaShop</span>
+    </a>
+    <nav class="header-nav">
+      <a href="/">Home</a>
+      <a href="/shop">Shop</a>
+      <a href="/track" class="active">Track Order</a>
+      <a href="/checkout" class="cart-btn" id="cartBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+        <span class="cart-badge" id="cartBadge">0</span>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<section class="track-hero">
+  <h1>Track your order</h1>
+  <p>Enter your tracking number to see the status of your shipment</p>
+  <form class="search-box" id="trackingForm">
+    <input type="text" id="trackingInput" placeholder="e.g. WCHAB12345678" autocomplete="off" spellcheck="false">
+    <button type="submit">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      Track
+    </button>
+  </form>
+</section>
+
+<div class="tracking-result" id="trackingResult">
+  <div class="card">
+    <div class="status-banner" id="statusBanner">
+      <div class="status-icon" id="statusIcon"></div>
+      <div class="status-info">
+        <h2 id="statusLabel"></h2>
+        <p id="statusSub"></p>
+      </div>
+    </div>
+    <div class="progress-section">
+      <div class="progress-steps" id="progressSteps" data-progress="0">
+        <div class="step" data-step="0"><div class="step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="step-label">Registered</span></div>
+        <div class="step" data-step="1"><div class="step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="step-label">Picked up</span></div>
+        <div class="step" data-step="2"><div class="step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="step-label">In transit</span></div>
+        <div class="step" data-step="3"><div class="step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="step-label">Out for delivery</span></div>
+        <div class="step" data-step="4"><div class="step-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><span class="step-label">Delivered</span></div>
+      </div>
+    </div>
+    <div class="details-grid">
+      <div class="detail-item"><div class="detail-label">Tracking number</div><div class="detail-value" id="detailTracking"></div></div>
+      <div class="detail-item"><div class="detail-label">Recipient</div><div class="detail-value" id="detailRecipient"></div></div>
+      <div class="detail-item"><div class="detail-label">Delivery address</div><div class="detail-value" id="detailAddress"></div></div>
+      <div class="detail-item"><div class="detail-label">Estimated delivery</div><div class="detail-value" id="detailDelivery"></div></div>
+    </div>
+    <div class="timeline-section">
+      <h3>Tracking history</h3>
+      <div class="timeline" id="timeline"></div>
+    </div>
+  </div>
+</div>
+
+<div class="tracking-result" id="notFound">
+  <div class="card">
+    <div class="not-found visible">
+      <h3>No order found</h3>
+      <p>The tracking number entered does not match any shipment.<br>Please check your number and try again.</p>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <span class="footer-brand">IKASHOP</span> &copy; 2026 — Delivered by email
+</footer>
+
+<script src="js/app.js"></script>
+<script>
+  const form = document.getElementById('trackingForm');
+  const input = document.getElementById('trackingInput');
+  const resultDiv = document.getElementById('trackingResult');
+  const notFoundDiv = document.getElementById('notFound');
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('track')) {
+    input.value = params.get('track');
+    searchTracking(params.get('track'));
+  }
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const val = input.value.trim().toUpperCase();
+    if (!val) return;
+    searchTracking(val);
+  });
+
+  async function searchTracking(tn) {
+    resultDiv.classList.remove('visible');
+    notFoundDiv.classList.remove('visible');
+    const s = await apiTrack(tn);
+    if (!s) { notFoundDiv.classList.add('visible'); return; }
+    resultDiv.classList.add('visible');
+    renderTracking(s);
+  }
+
+  function renderTracking(s) {
+    const si = STATUS_MAP[s.status] || STATUS_MAP.registered;
+    document.getElementById('statusBanner').className = 'status-banner ' + si.class;
+    document.getElementById('statusIcon').innerHTML = ICONS[si.icon];
+    document.getElementById('statusLabel').textContent = si.labelEn;
+    let sub = 'N° ' + s.trackingNumber;
+    if (s.status === 'delivered') sub += ' — Successfully delivered';
+    else if (s.status === 'delayed') sub += ' — A delay has been detected';
+    else sub += ' — Expected delivery: ' + formatDate(s.estimatedDelivery);
+    document.getElementById('statusSub').textContent = sub;
+
+    const step = getStatusStep(s.status);
+    document.getElementById('progressSteps').setAttribute('data-progress', step);
+    document.querySelectorAll('.step').forEach(el => {
+      const n = parseInt(el.dataset.step);
+      el.classList.remove('done','active');
+      if (n < step) el.classList.add('done');
+      if (n === step) el.classList.add('active');
+    });
+
+    document.getElementById('detailTracking').textContent = s.trackingNumber;
+    document.getElementById('detailRecipient').textContent = s.recipientName;
+    document.getElementById('detailAddress').textContent = s.recipientAddress + ', ' + s.recipientPostal + ' ' + s.recipientCity;
+    document.getElementById('detailDelivery').textContent = formatDate(s.estimatedDelivery);
+
+    const events = generateEvents(s.createdAt, s.estimatedDelivery, s.status, s.recipientCity);
+    const tl = document.getElementById('timeline');
+    tl.innerHTML = '';
+    events.forEach(ev => {
+      const d = document.createElement('div'); d.className = 'timeline-event';
+      d.innerHTML = '<div class="ev-date">' + formatDateTime(ev.date) + '</div><div class="ev-title">' + ev.title + '</div><div class="ev-location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>' + ev.location + '</div>';
+      tl.appendChild(d);
+    });
+  }
+  // Load cart badge
+  (async function(){
+    try {
+      const res = await fetch('api.php?action=get-cart');
+      const data = await res.json();
+      const n = (data.items||[]).length;
+      const badge = document.getElementById('cartBadge');
+      if(badge){ badge.textContent = n; badge.classList.toggle('visible', n > 0); }
+    } catch(e){}
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IkaShop — Premium Steering Wheels</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="brand">
+      <span class="brand-name">IkaShop</span>
+    </a>
+    <nav class="header-nav">
+      <a href="/" class="active">Home</a>
+      <a href="/shop">Shop</a>
+      <a href="/track">Track Order</a>
+      <a href="/checkout" class="cart-btn" id="cartBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+        <span class="cart-badge" id="cartBadge">0</span>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="home-hero">
+  <video class="hero-video" autoplay muted loop playsinline>
+    <source src="Video/kling_20260910_VIDEO_Hyper_real_5692_0.mp4" type="video/mp4">
+  </video>
+  <div class="hero-video-overlay"></div>
+  <div class="home-hero-inner">
+    <div class="home-hero-tag">Premium Carbon & Alcantara</div>
+    <h1>Custom Steering Wheels</h1>
+    <p>Premium steering wheel maquettes crafted over hours of meticulous work by professional German artisans. Available for Mercedes-Benz, Audi, Volkswagen & BMW.</p>
+    <div class="home-hero-actions">
+      <a href="/shop" class="btn btn-primary btn-hero">Shop now</a>
+      <a href="/track" class="btn btn-outline btn-hero">Track my order</a>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED PRODUCTS -->
+<section class="home-featured reveal">
+  <div class="home-featured-inner">
+    <div class="home-featured-label">Our Premium Selection</div>
+    <h2 class="home-featured-title">Top Steering Wheels</h2>
+    <div class="home-featured-grid" id="featuredGrid"></div>
+    <div class="featured-cta">
+      <p class="featured-cta-text">Choose your brand to explore all models</p>
+      <div class="featured-cta-brands">
+        <a href="/shop?brand=mercedes" class="featured-cta-btn">Mercedes</a>
+        <a href="/shop?brand=audi" class="featured-cta-btn">Audi</a>
+        <a href="/shop?brand=bmw" class="featured-cta-btn">BMW</a>
+        <a href="/shop?brand=volkswagen" class="featured-cta-btn">Volkswagen</a>
+      </div>
+      <a href="/shop" class="featured-see-all">View all steering wheels &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<script src="js/products.js"></script>
+<script>
+(function(){
+  const picks = ['audi-5','vw-4','bmw-1'];
+  const grid = document.getElementById('featuredGrid');
+  picks.forEach(id => {
+    const p = PRODUCTS.find(x => x.id === id);
+    if(!p) return;
+    const brand = BRANDS[p.brand];
+    grid.innerHTML += `
+      <a href="/shop?brand=${p.brand}" class="featured-card">
+        <div class="featured-card-img">
+          <img src="${p.img}" alt="${p.name}" loading="lazy">
+          ${p.badge ? `<span class="featured-badge">${p.badge}</span>` : ''}
+        </div>
+        <div class="featured-card-info">
+          <span class="featured-brand">${brand.name}</span>
+          <h3>${p.name}</h3>
+          <span class="featured-price">${p.price.toFixed(2)} &euro;</span>
+        </div>
+      </a>`;
+  });
+})();
+</script>
+
+<!-- BRANDS -->
+<section class="home-brands reveal">
+  <div class="home-brands-inner">
+    <div class="home-brands-label">Available maquette brands</div>
+    <div class="home-brands-grid">
+      <a href="/shop?brand=mercedes" class="home-brand-item">
+        <img src="img/logos/mercedes.png" alt="Mercedes-Benz" loading="lazy" decoding="async">
+        <span>Mercedes-Benz</span>
+      </a>
+      <a href="/shop?brand=audi" class="home-brand-item">
+        <img src="img/logos/audi.png" alt="Audi" loading="lazy" decoding="async">
+        <span>Audi</span>
+      </a>
+      <a href="/shop?brand=bmw" class="home-brand-item">
+        <img src="img/logos/bmw.svg" alt="BMW" loading="lazy" decoding="async">
+        <span>BMW</span>
+      </a>
+      <a href="/shop?brand=volkswagen" class="home-brand-item">
+        <img src="img/logos/volkswagen.png" alt="Volkswagen" loading="lazy" decoding="async">
+        <span>Volkswagen</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- OFFER -->
+<section class="home-offer reveal">
+  <div class="home-offer-inner">
+    <div class="home-offer-tag">Best value</div>
+    <h2>2 + 1 at 50% off</h2>
+    <p class="home-offer-sub">Purchase 2 steering wheels over 80 € each and get a 3rd one at half price</p>
+    <div class="offer-cards">
+      <div class="offer-card">
+        <div class="offer-card-icon">1</div>
+        <div class="offer-card-title">Single wheel</div>
+        <div class="offer-card-detail">29 € delivery by email</div>
+        <div class="offer-card-note">Standard rate</div>
+      </div>
+      <div class="offer-card">
+        <div class="offer-card-icon">2</div>
+        <div class="offer-card-title">Two wheels</div>
+        <div class="offer-card-detail">10 € delivery by email / item</div>
+        <div class="offer-card-note">Better value</div>
+      </div>
+      <div class="offer-card offer-card-best">
+        <div class="offer-card-badge">Recommended</div>
+        <div class="offer-card-icon">2+1</div>
+        <div class="offer-card-title">Two + one half price</div>
+        <div class="offer-card-detail">Only 14.99 € delivery by email</div>
+        <div class="offer-card-note">Best deal</div>
+      </div>
+    </div>
+    <p class="home-offer-note">Shipping is more affordable when more steering wheels are shipped together.<br>For the best value, we recommend the 2 + 1 half-price offer.</p>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="home-features reveal">
+  <div class="home-features-inner">
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      </div>
+      <h3>Premium Materials</h3>
+      <p>Genuine carbon fiber, forged carbon, Alcantara and high-grade leather sourced from top suppliers.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      </div>
+      <h3>Email Delivery</h3>
+      <p>Delivered worldwide by email with full tracking. Average delivery time: 2–3 weeks.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <h3>Secure & Tracked</h3>
+      <p>Every order gets a unique tracking number. Follow your delivery by email in real-time.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <h3>Built to Order</h3>
+      <p>Each steering wheel is handcrafted and customized. No mass production — quality guaranteed.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="home-cta reveal">
+  <div class="home-cta-inner">
+    <h2>Ready to upgrade your interior?</h2>
+    <p>Browse our collection of premium carbon and Alcantara steering wheels.</p>
+    <a href="/shop" class="btn btn-primary btn-hero">View all steering wheels</a>
+  </div>
+</section>
+
+<section class="purchase-protection reveal">
+  <div class="purchase-protection-inner">
+    <div class="protection-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+      <div>
+        <strong>Purchase Protection</strong>
+        <p>Every order is covered by our buyer protection program</p>
+      </div>
+    </div>
+    <div class="protection-item protection-refund">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+      <div>
+        <strong>Refund within 7–15 days</strong>
+        <p>In case of a problem with your package, refund within 7 to 15 business days. In case of user error, only 50% of the initial amount is refunded (taxes & shipping already paid). <a href="/terms" class="terms-link">Terms of use</a></p>
+      </div>
+    </div>
+    <div class="protection-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      <div>
+        <strong>Tracked Delivery by Email</strong>
+        <p>Every order includes a tracking number to follow your delivery by email in real time</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer reveal">
+  <span class="footer-brand">IKASHOP</span> &copy; 2026 — Premium Steering Wheels · <a href="/terms" class="terms-link">Terms of use</a>
+</footer>
+
+<script>
+  // Load cart badge from server
+  (async function(){
+    try {
+      const res = await fetch('api.php?action=get-cart');
+      const data = await res.json();
+      const n = (data.items||[]).length;
+      const badge = document.getElementById('cartBadge');
+      if(badge){ badge.textContent = n; badge.classList.toggle('visible', n > 0); }
+    } catch(e){}
+  })();
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('revealed');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
